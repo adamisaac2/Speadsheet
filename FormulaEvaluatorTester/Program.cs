@@ -5,72 +5,67 @@ using System;
 
 namespace FormulaEvaluator
 {
-
+    /*
+     * The main testing class for this assigment. Can use a variety of different expressions and the main
+     * program will try and solve them to the best of its ability. Every single method below is used for testing
+     * the program in a variety of different ways. Whether its by using parenthesis, or complex expressions
+     * the testing programs can be used in a variety of different ways.
+     */
 
     [TestClass]
     public class EvaluatorTests
     {
-
-        private Evaluator eval;
-
-        [TestInitialize]
-        public void Initialize()
-        {
-            eval = new Evaluator(VariableEvaluator);
-        }
-
-
 
         [TestMethod]
         private int VariableEvaluator(String variableName)
         {
             if (variableName == "x") return 4;
             if (variableName == "y") return 2;
-            throw new ArgumentException($"Variable {variableName} not found.");
+            throw new ArgumentException("Variable Not Found");
 
         }
 
         [TestMethod]
         public void OtherSimpleExpression()
         {
-            eval.TokenizeExpression("60-5*10");
+            Evaluator eval = new Evaluator(null);
+            eval.TokenizeExpression("15-7*(12/6)");
             eval.EvalTokens();
-            Assert.AreEqual(10, eval.getValueS().Pop());
+            Assert.AreEqual(1, eval.getValueS().Pop());
+            
         }
 
 
         [TestMethod]
         public void SimpleExpression()
         {
+            Evaluator eval = new Evaluator(null);
 
-            eval.TokenizeExpression("5+5*2");
+            eval.TokenizeExpression("5+5-5");
             eval.EvalTokens();
-            Assert.AreEqual(15, eval.getValueS().Pop());
+            Assert.AreEqual(5, eval.getValueS().Pop());
 
         }
 
         [TestMethod]
         public void Parenthesis()
         {
+            Evaluator eval = new Evaluator(null);
 
-            eval.TokenizeExpression("10+5*(3-1)");
+            eval.TokenizeExpression("(2*3)+10");
             eval.EvalTokens();
-            Assert.AreEqual(20, eval.getValueS().Pop());
+            Assert.AreEqual(16, eval.getValueS().Pop());
 
         }
 
-        /*public static void Main(string[] args)
+        [TestMethod]
+        public void Variable()
         {
-
-            EvaluatorTests tests = new EvaluatorTests();
-
-            tests.SimpleExpression();
-
-            tests.Parenthesis();
-
-
-        }
-        */
+            Evaluator eval = new Evaluator(VariableEvaluator);
+            eval.TokenizeExpression("x+y");
+            eval.EvalTokens();
+            Assert.AreEqual(6, eval.getValueS().Pop());
+        }  
 
     }
 }
