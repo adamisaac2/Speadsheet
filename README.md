@@ -21,7 +21,10 @@ getting variables to correctly work with parenthesis.
     1. Formula Evaluator:   Predicted Hours:          10        Actual Hours:   20
     2. Formula Evaluator Tester:   Predicted Hours:           4        Actual Hours:    5
 
-    Time Breakdown - 
+    1. DependencyGraph: Predicted Hours: 10   Actual Hours: 10
+    2. DependencyGraphTester: Predicted Hours: 5 Actual Hours: 2
+
+    Time Breakdown Assignment 1 - 
     My first day working on this, I spent about 4 or 5 hours just writing all the base code without debugging
     to kind of work my way and get a feel for how I thought the code would best work. The next day I spent about 4
     hours getting the tests set up and debugging the testing software which was kind of a pain. I then spent
@@ -29,3 +32,5 @@ getting variables to correctly work with parenthesis.
     but I was completely wrong. It was a complete buggy mess that didnt really work half the time so I spent about 
     10 hours through 2 more days debugging and writing new code, and fixing that code. In total I spent about 
     20 hours on the source code and probably 5 on the tester.
+
+    Time Breakdown Assignment 2 - 
