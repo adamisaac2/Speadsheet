@@ -1,3 +1,14 @@
+/// <summary>
+/// Represents the testing class for DependencyGraph. Contains all testing methods
+/// </summary>
+/// <author>Adam Isaac</author>
+/// <created>January 20, 2024</created>
+/// <modified> - January 26, 2024 - Added test methods to verify integrity of code</modified>
+/// <remarks>
+/// Usage: To verify the integrity of the DependencyGraph class. 
+/// </remarks>
+
+
 using System;
 using System.Collections.Generic;
 using Microsoft.VisualStudio.TestTools.UnitTesting;

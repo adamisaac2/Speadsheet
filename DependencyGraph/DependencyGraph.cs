@@ -1,8 +1,10 @@
-﻿// Skeleton implementation written by Joe Zachary for CS 3500, September 2013.
-// Version 1.1 (Fixed error in comment for RemoveDependency.)
-// Version 1.2 - Daniel Kopta 
-//               (Clarified meaning of dependent and dependee.)
-//               (Clarified names in solution/project structure.)
+﻿///<summary>
+/// File: DependencyGraph.cs
+/// Purpose: Contains the implementation of the DependencyGraph class.
+/// Author: Adam Isaac
+/// Created: January 20, 2024
+/// Modified: - January 26, 2024 - Added all methods for submission
+/// </summary>            
 
 using System;
 using System.Collections.Generic;
