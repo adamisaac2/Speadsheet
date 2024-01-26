@@ -199,8 +199,7 @@ namespace SpreadsheetUtilities
         public void ReplaceDependees(string s, IEnumerable<string> newDependees)
         {
 
-            Console.WriteLine($"Dependees of '{s}' before replacements: {string.Join(", ", GetDependees(s))}");
-
+            //Exception handling
             if (newDependees == null)
             {
                 throw new ArgumentNullException(nameof(newDependees));
@@ -213,7 +212,7 @@ namespace SpreadsheetUtilities
                 Tuple<string, string> newDependency = Tuple.Create(t, s);
                 dependencySet.Add(newDependency);
             }
-            Console.WriteLine($"Dependees of '{s}' after replacements: {string.Join(", ", GetDependees(s))}");
+           
 
         }
 

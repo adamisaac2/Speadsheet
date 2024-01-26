@@ -268,6 +268,10 @@ namespace DevelopmentTests
             }
         }
 
+      
+        /// <summary>
+        /// Test for replacing dependees
+        /// </summary>
         [TestMethod()]
         public void ReplaceDependeesTest()
         {
@@ -275,23 +279,96 @@ namespace DevelopmentTests
             t.AddDependency("x", "b");
             t.AddDependency("a", "z");
 
-            // Original dependees of 'b'
+            
             IEnumerable<string> originalDependeesOfB = t.GetDependees("b");
 
 
-            // Replace dependees of 'b' with a new set
+            
             t.ReplaceDependees("b", new HashSet<string>() { "a", "c" });
 
-            // Updated dependees of 'b'
+          
             IEnumerable<string> updatedDependeesOfB = t.GetDependees("b");
 
 
-            // Assert that the dependees of 'b' have been correctly replaced
+          
             CollectionAssert.AreEquivalent(new string[] { "a", "c" }, updatedDependeesOfB.ToArray());
 
-            // Assert that other dependees remain unchanged
+            
             CollectionAssert.AreEquivalent(originalDependeesOfB.ToArray(), t.GetDependees("b").ToArray());
         }
+
+
+        /// <summary>
+        /// Test for verifying dependents with dependents
+        /// </summary>
+        [TestMethod()]
+        public void HasDependents_WithDependent_ReturnsTrue()
+        {
+            DependencyGraph t = new DependencyGraph();
+            
+            t.AddDependency("x", "a"); 
+
+            
+            bool result = t.HasDependents("x");
+
+           
+            Assert.IsTrue(result);
+        }
+
+        /// <summary>
+        /// Test for verifying dependents without dependents
+        /// </summary>
+
+        [TestMethod()]
+        public void HasDependents_WithoutDependent_ReturnsFalse()
+        {
+            DependencyGraph t = new DependencyGraph();
+
+           t.AddDependency("x", "a"); 
+
+            
+            bool result = t.HasDependents("b");
+
+            
+            Assert.IsFalse(result);
+        }
+
+
+        /// <summary>
+        /// Test for verifying dependees with dependees 
+        /// </summary>
+        [TestMethod()]
+        public void HasDependees_WithDependee_ReturnsTrue()
+        {
+
+            DependencyGraph t = new DependencyGraph();
+           
+            t.AddDependency("s", "t"); 
+
+            
+            bool result = t.HasDependees("t");
+
+            
+            Assert.IsTrue(result);
+        }
+
+
+        /// <summary>
+        /// Test for dependees without dependees 
+        /// </summary>
+        [TestMethod()]
+        public void HasDependees_WithoutDependee_ReturnsFalse()
+        {
+            DependencyGraph t = new DependencyGraph();
+            t.AddDependency("ab", "x"); 
+
+            bool result = t.HasDependees("ac");
+
+            
+            Assert.IsFalse(result);
+        }
+
+
 
 
     }

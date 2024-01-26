@@ -34,3 +34,7 @@ getting variables to correctly work with parenthesis.
     20 hours on the source code and probably 5 on the tester.
 
     Time Breakdown Assignment 2 - 
+    Not alot to say about the time spent on this assignment. I probably spent around 10 hours total, most of it on writing 
+    the code and then probably 2 hours debugging and getting the tests to work. I would say that the tests provided to us 
+    were adequate at testing the big cases while I only needed to really look into a small number of problems regarding other methods. 
+    I then made a few extra test cases in the Tester class to ensure my code coverage was as much as I could possibly get. 
