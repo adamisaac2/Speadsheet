@@ -40,7 +40,7 @@ namespace FormulaEvaluator
 
                         if (value.Count < 2)
                         {
-                            throw new InvalidOperationException("Invalid Expression: Not enough operands for operation.");
+                            throw new ArgumentException("Invalid Expression: Not enough operands for operation.");
                         }
                         
                         int number2 = value.Pop();
@@ -107,7 +107,7 @@ namespace FormulaEvaluator
                     }
                     else
                     {
-                        throw new InvalidOperationException("Variable evaluator delegate not provided.");
+                        throw new ArgumentException("Variable evaluator delegate not provided.");
                     }
                 }
             }
@@ -125,7 +125,7 @@ namespace FormulaEvaluator
                 }
                 else
                 {
-                    throw new InvalidOperationException("Invalid Expression: Stack not properly emptied.");
+                    throw new ArgumentException("Invalid Expression: Stack not properly emptied.");
                 }
             }
 
