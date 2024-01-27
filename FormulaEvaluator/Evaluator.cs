@@ -35,6 +35,7 @@ namespace FormulaEvaluator
                 Console.WriteLine("Operand Stack: " + string.Join(", ", operand));
                 Console.WriteLine("");
 
+                
 
                 if (isDigit(token))
                 {
@@ -117,10 +118,16 @@ namespace FormulaEvaluator
                     }
                 }
             }
+        
+            Console.WriteLine("Before final evaluation:");
+            Console.WriteLine("Value Stack: " + string.Join(", ", value));
+            Console.WriteLine("Operand Stack: " + string.Join(", ", operand));
+
+           
 
             while (operand.Count > 0)
             {
-                if (operand.Count == 1 && (operand.Peek() == "+" || operand.Peek() == "-") && value.Count == 2)
+                if (operand.Count == 1 && value.Count == 2 && (operand.Peek() == "+" || operand.Peek() == "-"))
                 {
                     int number1 = value.Pop();
                     int number2 = value.Pop();
@@ -134,6 +141,7 @@ namespace FormulaEvaluator
                     throw new ArgumentException("Invalid Expression: Stack not properly emptied.");
                 }
             }
+           
 
         }
 
@@ -178,6 +186,11 @@ namespace FormulaEvaluator
          */
         public static int Evaluate(String expression,Lookup variableEvaluator)
         {
+           
+            if(expression == "")
+            {
+                throw new ArgumentException("Expression can not be empty");
+            }
             List<string> tokens = Sep(expression);
 
             Evaluator evaluate = new Evaluator(variableEvaluator);
