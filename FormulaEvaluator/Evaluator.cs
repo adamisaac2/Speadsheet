@@ -33,6 +33,7 @@ namespace FormulaEvaluator
                 Console.WriteLine("Token: " + token);
                 Console.WriteLine("Value Stack: " + string.Join(", ", value));
                 Console.WriteLine("Operand Stack: " + string.Join(", ", operand));
+                Console.WriteLine("");
 
 
                 if (isDigit(token))
@@ -117,7 +118,7 @@ namespace FormulaEvaluator
                 }
             }
 
-            if (operand.Count > 0)
+            while (operand.Count > 0)
             {
                 if (operand.Count == 1 && (operand.Peek() == "+" || operand.Peek() == "-") && value.Count == 2)
                 {
