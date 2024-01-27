@@ -35,7 +35,7 @@ namespace FormulaEvaluator
                 Console.WriteLine("Operand Stack: " + string.Join(", ", operand));
                 Console.WriteLine("");
 
-                
+
 
                 if (isDigit(token))
                 {
@@ -49,7 +49,7 @@ namespace FormulaEvaluator
                         {
                             throw new ArgumentException("Invalid Expression: Not enough operands for operation.");
                         }
-                        
+
                         int number2 = value.Pop();
                         string operand1 = operand.Pop();
                         int number1 = value.Pop();
@@ -57,7 +57,7 @@ namespace FormulaEvaluator
                         int final = (operand1 == "*") ? number1 * number2 : number1 / number2;
                         value.Push(final);
                     }
-                    
+
                 }
                 else if (isOperator(token) && (token == "+" || token == "-"))
                 {
@@ -81,6 +81,10 @@ namespace FormulaEvaluator
                 }
                 else if (token == ")")
                 {
+                    if (!operand.Contains("(")) { 
+                        throw new ArgumentException("Unmatched Parenthesis");
+                    }
+                    
                     while (operand.Count > 0 && operand.Peek() != "(")
                     {
                         int number1 = value.Pop();
@@ -118,38 +122,59 @@ namespace FormulaEvaluator
                     }
                 }
             }
-        
+
             Console.WriteLine("Before final evaluation:");
             Console.WriteLine("Value Stack: " + string.Join(", ", value));
             Console.WriteLine("Operand Stack: " + string.Join(", ", operand));
 
-           
+
 
             while (operand.Count > 0)
             {
-                if (operand.Count == 1 && value.Count == 2 && (operand.Peek() == "+" || operand.Peek() == "-"))
+                if (value.Count < 2)
                 {
-                    int number1 = value.Pop();
-                    int number2 = value.Pop();
-                    string operatorr = operand.Pop();
-                    int final = (operatorr == "+") ? number1 + number2 : number2 - number1;
-                    value.Push(final);
-                    Console.WriteLine(final);
+                    throw new ArgumentException("Invalid Expression: Not enough operands for operation.");
                 }
-                else
+
+                int number2 = value.Pop();
+                int number1 = value.Pop();
+                string operatorr = operand.Pop();
+
+                if(operatorr == "/" && number2 == 0)
                 {
-                    throw new ArgumentException("Invalid Expression: Stack not properly emptied.");
+                    throw new ArgumentException("Division by zero is not allowed");
                 }
+
+                int final;
+                switch (operatorr)
+                {
+                    case "+":
+                        final = number1 + number2;
+                        break;
+                    case "-":
+                        final = number1 - number2;
+                        break;
+                    case "*":
+                        final = number1 * number2;
+                        break;
+                    case "/":
+                        final = number1 / number2;
+                        break;
+                    default:
+                        throw new ArgumentException("Invalid operator.");
+                }
+                value.Push(final);
+
+                Console.WriteLine(final);
             }
-           
-
         }
-
             //This method matches any variable given if its uppercase or lowercase and if it contains a number or not.
             //returns if true
             private bool isVariable(string token)
         {
-            return Regex.IsMatch(token, "^[a-zA-Z_][a-zA-Z0-9_]*$");
+            string pattern = @"^[a-zA-Z][1-9]$";
+
+            return Regex.IsMatch(token, pattern);
         }
 
 
