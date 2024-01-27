@@ -30,6 +30,11 @@ namespace FormulaEvaluator
             foreach (string token in tokens)
             {
 
+                Console.WriteLine("Token: " + token);
+                Console.WriteLine("Value Stack: " + string.Join(", ", value));
+                Console.WriteLine("Operand Stack: " + string.Join(", ", operand));
+
+
                 if (isDigit(token))
                 {
                     int tokenDigit = int.Parse(token);
