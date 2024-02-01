@@ -101,10 +101,12 @@ namespace SpreadsheetUtilities
                 if (token == "(")
                 {
                     parenthesesBalance++;
+                    tokens.Add(token);
                 }
                 else if (token == ")")
                 {
                     parenthesesBalance--;
+                    tokens.Add(token);
                     if (parenthesesBalance < 0)
                     {
                         throw new FormulaFormatException("Unbalanced parentheses in the formula.");
@@ -118,6 +120,10 @@ namespace SpreadsheetUtilities
                         throw new FormulaFormatException("Two operators in a row or operator after opening parenthesis.");
                     }
                     previousTokenWasOperatorOrOpeningParenthesis = true;
+                    if (IsOperator(token))
+                    {
+                        tokens.Add(token);
+                    }
                 }
                 else if (token == ")")
                 {
@@ -160,121 +166,215 @@ namespace SpreadsheetUtilities
 
         }
 
-    /// <summary>
-    /// Evaluates this Formula, using the lookup delegate to determine the values of
-    /// variables.  When a variable symbol v needs to be determined, it should be looked up
-    /// via lookup(normalize(v)). (Here, normalize is the normalizer that was passed to 
-    /// the constructor.)
-    /// 
-    /// For example, if L("x") is 2, L("X") is 4, and N is a method that converts all the letters 
-    /// in a string to upper case:
-    /// 
-    /// new Formula("x+7", N, s => true).Evaluate(L) is 11
-    /// new Formula("x+7").Evaluate(L) is 9
-    /// 
-    /// Given a variable symbol as its parameter, lookup returns the variable's value 
-    /// (if it has one) or throws an ArgumentException (otherwise).
-    /// 
-    /// If no undefined variables or divisions by zero are encountered when evaluating 
-    /// this Formula, the value is returned.  Otherwise, a FormulaError is returned.  
-    /// The Reason property of the FormulaError should have a meaningful explanation.
-    ///
-    /// This method should never throw an exception.
-    /// </summary>
-    public object Evaluate(Func<string, double> lookup)
-    {
-            Stack<Double> value = new Stack<double> ();
-            Stack<string> operators = new Stack<string>();
-       
-        foreach(var token in tokens)
+        /// <summary>
+        /// Evaluates this Formula, using the lookup delegate to determine the values of
+        /// variables.  When a variable symbol v needs to be determined, it should be looked up
+        /// via lookup(normalize(v)). (Here, normalize is the normalizer that was passed to 
+        /// the constructor.)
+        /// 
+        /// For example, if L("x") is 2, L("X") is 4, and N is a method that converts all the letters 
+        /// in a string to upper case:
+        /// 
+        /// new Formula("x+7", N, s => true).Evaluate(L) is 11
+        /// new Formula("x+7").Evaluate(L) is 9
+        /// 
+        /// Given a variable symbol as its parameter, lookup returns the variable's value 
+        /// (if it has one) or throws an ArgumentException (otherwise).
+        /// 
+        /// If no undefined variables or divisions by zero are encountered when evaluating 
+        /// this Formula, the value is returned.  Otherwise, a FormulaError is returned.  
+        /// The Reason property of the FormulaError should have a meaningful explanation.
+        ///
+        /// This method should never throw an exception.
+        /// </summary>
+        public object Evaluate(Func<string, double> lookup)
         {
-                double number;
-                Console.WriteLine($"Processing token: {token}"); // Debug output
-
-                if (double.TryParse(token, out number))
-                {
-                    Console.WriteLine($" - It's a number. Pushing onto values stack: {number}");
-                    value.Push(number);
-                    EvaluateTopOperator(value, operators);
-                }
-                else if (IsOperator(token))
-                {
-                    Console.WriteLine($" - It's an operator: {token}");
-                    if (token == "+" || token == "-")
-                    {
-                        Console.WriteLine(" - Applying preceding operator if any");
-                        EvaluateTopOperator(value, operators);
-                    }
-                    Console.WriteLine($" - Pushing operator onto stack: {token}");
-                    operators.Push(token);
-
-                }
-                else if(IsVariable(token))
-                {
-                    try
-                    {
-                        Console.WriteLine($" - It's a variable: {token}");
-                        value.Push(lookup(token));
-                        EvaluateTopOperator(value, operators);
-                    }
-                    catch (ArgumentException)
-                    {
-                        return new FormulaError($"Undefined variable: {token}");
-                    }
-                }
-           
-                else if(token == "(")
             {
-                    operators.Push(token);
-            }
-        
-            else if(token == ")")
-            {
-                    EvaluateTopOperator(value, operators);
-                    operators.Pop();
-                    EvaluateTopOperator(value, operators);
-            }
-            else
-            {
-                   Console.WriteLine($" - Unrecognized token: {token}");
-            }
-            Console.WriteLine($"Current state - Values: [{string.Join(", ", value)}], Operators: [{string.Join(", ", operators)}]"); // Debug output
+                Stack<double> value = new Stack<double>();
+                Stack<string> operators = new Stack<string>();
 
-        }
-            EvaluateTopOperator(value, operators);
-            Double result = value.Pop();
-            Console.WriteLine($"Final result: {result}"); // Debug output
-            return result;
-        }
-
-
-        public void EvaluateTopOperator(Stack<double> value, Stack<string> operators)
-        {
-            if (operators.Count > 0 && value.Count >= 2)
-            {
-                string op = operators.Peek();
-                if (op == "+" || op == "-" || op == "*" || op == "/")
+                foreach (string token in tokens)
                 {
-                    operators.Pop();
-                    double right = value.Pop();
-                    double left = value.Pop();
 
-                    if (op == "/" && right == 0)
+                    Console.WriteLine("Token: " + token);
+                    Console.WriteLine("Value Stack: " + string.Join(", ", value));
+                    Console.WriteLine("Operand Stack: " + string.Join(", ", operators));
+                    Console.WriteLine("");
+
+
+
+                    if (IsNumeric(token))
                     {
-                        throw new ArgumentException("Division by zero");
+                        double tokenDigit;
+                        double.TryParse(token, out tokenDigit);
+                        value.Push(tokenDigit);
+
+                        while (operators.Count > 0 && (operators.Peek() == "*" || operators.Peek() == "/"))
+                        {
+
+                            if (value.Count < 2)
+                            {
+                                throw new ArgumentException("Invalid Expression: Not enough operands for operation.");
+                            }
+
+                            double number2 = value.Pop();
+                            string operand1 = operators.Pop();
+                            double number1 = value.Pop();
+
+                            double final = (operand1 == "*") ? number1 * number2 : number1 / number2;
+                            value.Push(final);
+                        }
+
+                    }
+                    else if (IsOperator(token) && (token == "+" || token == "-"))
+                    {
+                        while (operators.Count > 0 && (operators.Peek() == "+" || operators.Peek() == "-" || operators.Peek() == "*" || operators.Peek() == "/"))
+                        {
+                            double number1 = value.Pop();
+                            double number2 = value.Pop();
+                            String operatorr = operators.Pop();
+                            double final = (operatorr == "+") ? number1 + number2 : number2 - number1;
+                            value.Push(final);
+                        }
+                        operators.Push(token);
+                    }
+                    else if (IsOperator(token) && (token == "*" || token == "/"))
+                    {
+                        operators.Push(token);
+                        continue;
+                    }
+                    else if (token == "(")
+                    {
+                        operators.Push(token);
+                    }
+                    else if (token == ")")
+                    {
+                        if (!operators.Contains("("))
+                        {
+                            throw new ArgumentException("Unmatched Parenthesis");
+                        }
+
+                        while (operators.Count > 0 && operators.Peek() != "(")
+                        {
+                            double number1 = value.Pop();
+                            double number2 = value.Pop();
+                            String operatorr = operators.Pop();
+                            double final = 0;
+                            switch (operatorr)
+                            {
+                                case "+":
+                                    final = number2 + number1;
+                                    break;
+                                case "-":
+                                    final = number2 - number1;
+                                    break;
+                                case "*":
+                                    final = number2 * number1;
+                                    break;
+                                case "/":
+                                    if (number1 == 0)
+                                    {
+                                        throw new ArgumentException("Cannot divide by zero.");
+                                    }
+                                    final = number2 / number1;
+                                    break;
+                                default:
+                                    throw new ArgumentException("Unsupported operator: " + operatorr);
+                            }
+                            value.Push(final);
+                        }
+                        operators.Pop();
                     }
 
-                    double result = op switch
+                    else if (IsVariable(token))
                     {
-                        "+" => left + right,
-                        "-" => left - right,
-                        "*" => left * right,
-                        "/" => left / right,
-                        _ => 0
-                    };
+                        try
+                        {
 
-                    value.Push(result);
+                            value.Push(lookup(token));
+                        }
+                        catch (ArgumentException)
+                        {
+                            return new FormulaError($"Undefined variable: {token}");
+                        }
+                    }
+
+
+                    else if (operators.Count > 0 && (operators.Peek() == "("))
+                    {
+                        operators.Pop();
+                    }
+
+                    while (operators.Count > 0 && (operators.Peek() == "*" || operators.Peek() == "/"))
+                    {
+                        double number1 = value.Pop();
+                        double number2 = value.Pop();
+                        String operatorr = operators.Pop();
+                        double final = (operatorr == "*") ? number1 * number2 : number1 / number2;
+                        value.Push(final);
+
+                    }
+
+
+
                 }
+
+                Console.WriteLine("Before final evaluation:");
+                Console.WriteLine("Value Stack: " + string.Join(", ", value));
+                Console.WriteLine("Operand Stack: " + string.Join(", ", operators));
+
+
+
+                while (operators.Count > 0)
+                {
+                    if (value.Count < 2)
+                    {
+                        throw new ArgumentException("Invalid Expression: Not enough operands for operation.");
+                    }
+
+                    double number2 = value.Pop();
+                    double number1 = value.Pop();
+                    string operatorr = operators.Pop();
+
+                    if (operatorr == "/" && number2 == 0)
+                    {
+                        throw new ArgumentException("Division by zero is not allowed");
+                    }
+
+                    double final;
+                    switch (operatorr)
+                    {
+                        case "+":
+                            final = number1 + number2;
+                            break;
+                        case "-":
+                            final = number1 - number2;
+                            break;
+                        case "*":
+                            final = number1 * number2;
+                            break;
+                        case "/":
+                            if (number1 == 0)
+                            {
+                                throw new ArgumentException("Cannot divide by zero.");
+                            }
+                            final = number2 / number1;
+                            break;
+                        default:
+                            throw new ArgumentException("Invalid operator.");
+                    }
+                    value.Push(final);
+                }
+
+                if (value.Count == 1 && operators.Count == 0)
+                {
+                    return value.Pop();
+                }
+                else
+                {
+                    throw new ArgumentException();
+                }
+
             }
         }
 
@@ -291,6 +391,8 @@ namespace SpreadsheetUtilities
         /// </summary>
         public IEnumerable<String> GetVariables()
     {
+            if (tokens == null || normalizer == null) return Enumerable.Empty<string>();
+
             HashSet<string> normalizedVariables = new HashSet<string>();
 
         foreach(var token in tokens)

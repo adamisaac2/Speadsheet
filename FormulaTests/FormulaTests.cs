@@ -8,6 +8,55 @@ namespace FormulaTests
     {
 
         [TestMethod]
+        public void OperatorNotEquals_DifferentFormulas_ReturnsTrue()
+        {
+            // Arrange
+            var formula1 = new Formula("x1 + y2");
+            var formula2 = new Formula("y2 + x1");
+
+            // Act & Assert
+            Assert.IsTrue(formula1 != formula2, "Operator != should return true for different formulas.");
+        }
+
+
+        [TestMethod]
+        public void GetHashCode_SameFormulaObject_ConsistentHashCode()
+        {
+            // Arrange
+            var formula = new Formula("x1 + y2");
+
+            // Act
+            int hashCode1 = formula.GetHashCode();
+            int hashCode2 = formula.GetHashCode();
+
+            // Assert
+            Assert.AreEqual(hashCode1, hashCode2, "Hash code should be consistent across calls.");
+        }
+
+        [TestMethod]
+        public void TestGetVariables()
+        {
+            Formula f = new Formula("2 + 2");
+            // Act
+            var variables = f.GetVariables();
+
+            // Assert
+            Assert.IsFalse(variables.Any()); // C
+        }
+
+        [TestMethod]
+        public void GetVariables_WithVariables_CorrectCollection()
+        {
+            Formula formula = new Formula("x1 + y2 + z3", s => s, s => true);
+            var variables = formula.GetVariables().OrderBy(v => v).ToList();
+            Assert.AreEqual(3, variables.Count);
+            Assert.AreEqual("x1", variables[0]);
+            Assert.AreEqual("y2", variables[1]);
+            Assert.AreEqual("z3", variables[2]);
+        }
+
+
+        [TestMethod]
         public void TestParenthesis()
         {
             Formula f = new Formula("(2+3)*6");
@@ -15,7 +64,47 @@ namespace FormulaTests
             Assert.AreEqual(30.0, result, "The evaluation process is incorrect");
         }
 
+        [TestMethod]
+        [ExpectedException(typeof(FormulaFormatException))]
+        public void TestRightInvalidParenthesis()
+        {
+            Formula f = new Formula("(5+(5-(7*(8/2)))))");
+           
+        }
 
+        [TestMethod]
+        [ExpectedException(typeof(FormulaFormatException))]
+        public void TestLeftInvalidParenthesis()
+        {
+            Formula f = new Formula("(5+(5-(7*(8/2)))");
+
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(FormulaFormatException))]
+        public void TestLastOperator()
+        {
+            Formula f = new Formula("5+8+12+");
+
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(ArgumentException))]
+        public void TestDivideByZero()
+        {
+            Formula f = new Formula("(10/0)");
+
+        }
+
+            [TestMethod]
+        
+        public void TestLotsOfParenthesis()
+        {
+            Formula f = new Formula("(5-5)+(5*3)-(10/2)");
+            var result = f.Evaluate(s => 0);
+            Assert.AreEqual(result, 10.0);
+
+        }
 
         [TestMethod]
         public void TestSimpleAddition()
@@ -84,45 +173,31 @@ namespace FormulaTests
             Assert.AreEqual(14.0, result, "The evaluation result is incorrect");
 
         }
-
-
         [TestMethod]
-        public void TestEvaluateTopOperator_Addition()
+    
+        public void TestInvalidVariable()
         {
-            // Arrange
-            Stack<double> values = new Stack<double>();
-            Stack<string> operators = new Stack<string>();
-            values.Push(2);
-            values.Push(3);
-            operators.Push("+");
+            Formula f = new Formula("x2 + y2 * z3");
 
-            Formula formula = new Formula("2+3"); // The content here is not important for the test
+            double Lookup(string varName)
+            {
+                return varName switch
+                {
+                    "x1" => 2,
+                    "z3" => 4,
+                    "y2" => 3,
+                    _ => throw new ArgumentException("undefined variable")
+                };
+            }
+            var result = f.Evaluate(Lookup);
 
-            // Act
-            formula.EvaluateTopOperator(values, operators); // Assuming EvaluateTopOperator is public/internal for testing
+            Assert.IsInstanceOfType(result, typeof(FormulaError), "Result should be of type FormulaError");
 
-            // Assert
-            Assert.AreEqual(1, values.Count, "There should be one value on the stack.");
-            Assert.AreEqual(5, values.Peek(), "The result of 2 + 3 should be 5.");
-            Assert.AreEqual(0, operators.Count, "There should be no operators left on the stack.");
+            var formulaError = (FormulaError)result;
+            Assert.AreEqual("Undefined variable: x2", formulaError.Reason, "The reason for the error should match the expected message.");
         }
 
-        /*[TestMethod]
-          public void TestIsOperator()
-          {
-              Assert.IsTrue(Formula.IsOperator("+"), "Plus should be recognized as an operator.");
-              Assert.IsTrue(Formula.IsOperator("-"), "Minus should be recognized as an operator.");
-              Assert.IsTrue(Formula.IsOperator("*"), "Multiplication should be recognized as an operator.");
-              Assert.IsTrue(Formula.IsOperator("/"), "Division should be recognized as an operator.");
-
-              // Test with a non-operator
-              Assert.IsFalse(Formula.IsOperator("x"), "Non-operator should not be recognized as an operator.");
-              Assert.IsFalse(Formula.IsOperator("123"), "Number should not be recognized as an operator.");
-              Assert.IsFalse(Formula.IsOperator("("), "Opening parenthesis should not be recognized as an operator.");
-              Assert.IsFalse(Formula.IsOperator(")"), "Closing parenthesis should not be recognized as an operator.");
 
 
-          }
-          */
     }
 }
