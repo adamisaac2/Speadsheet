@@ -1,21 +1,13 @@
-﻿// Skeleton written by Joe Zachary for CS 3500, September 2013
-// Read the entire skeleton carefully and completely before you
-// do anything else!
-
-// Version 1.1 (9/22/13 11:45 a.m.)
-
-// Change log:
-//  (Version 1.1) Repaired mistake in GetTokens
-//  (Version 1.1) Changed specification of second constructor to
-//                clarify description of how validation works
-
-// (Daniel Kopta) 
-// Version 1.2 (9/10/17) 
-
-// Change log:
-//  (Version 1.2) Changed the definition of equality with regards
-//                to numeric tokens
-
+﻿
+/// <summary>
+/// Represents the main formula class, contains all methods and handling for all classes. 
+/// </summary>
+/// <author>Adam Isaac</author>
+/// <created>Feb 1, 2024</created>
+/// <modified> - Feb 1, 2024 - Debugging and verifying all methods work as intended</modified>
+/// <remarks>
+/// Usage: To verify the integrity of the Formula class. 
+/// </remarks>
 
 using System;
 using System.Collections.Generic;
@@ -87,6 +79,8 @@ namespace SpreadsheetUtilities
         private Func<string, string> normalizer;
     public Formula(String formula, Func<string, string> normalize, Func<string, bool> isValid)
     {
+            normalizer = normalize ?? (s => s);
+
             if (String.IsNullOrWhiteSpace(formula))
             {
                 throw new FormulaFormatException("The formula cannot be empty or whitespace.");
@@ -212,14 +206,16 @@ namespace SpreadsheetUtilities
                         while (operators.Count > 0 && (operators.Peek() == "*" || operators.Peek() == "/"))
                         {
 
-                            if (value.Count < 2)
-                            {
-                                throw new ArgumentException("Invalid Expression: Not enough operands for operation.");
-                            }
 
                             double number2 = value.Pop();
                             string operand1 = operators.Pop();
                             double number1 = value.Pop();
+
+                            if(operand1 == "/" && number2 == 0)
+                            {
+                                throw new ArgumentException();
+                            }
+                          
 
                             double final = (operand1 == "*") ? number1 * number2 : number1 / number2;
                             value.Push(final);
@@ -249,11 +245,6 @@ namespace SpreadsheetUtilities
                     }
                     else if (token == ")")
                     {
-                        if (!operators.Contains("("))
-                        {
-                            throw new ArgumentException("Unmatched Parenthesis");
-                        }
-
                         while (operators.Count > 0 && operators.Peek() != "(")
                         {
                             double number1 = value.Pop();
@@ -272,7 +263,7 @@ namespace SpreadsheetUtilities
                                     final = number2 * number1;
                                     break;
                                 case "/":
-                                    if (number1 == 0)
+                                    if (number2 == 0)
                                     {
                                         throw new ArgumentException("Cannot divide by zero.");
                                     }
@@ -299,11 +290,11 @@ namespace SpreadsheetUtilities
                         }
                     }
 
-
-                    else if (operators.Count > 0 && (operators.Peek() == "("))
+                   else if (operators.Count > 0 && (operators.Peek() == "("))
                     {
                         operators.Pop();
                     }
+
 
                     while (operators.Count > 0 && (operators.Peek() == "*" || operators.Peek() == "/"))
                     {
@@ -315,7 +306,7 @@ namespace SpreadsheetUtilities
 
                     }
 
-
+                    
 
                 }
 
@@ -327,16 +318,12 @@ namespace SpreadsheetUtilities
 
                 while (operators.Count > 0)
                 {
-                    if (value.Count < 2)
-                    {
-                        throw new ArgumentException("Invalid Expression: Not enough operands for operation.");
-                    }
-
+                   
                     double number2 = value.Pop();
                     double number1 = value.Pop();
                     string operatorr = operators.Pop();
 
-                    if (operatorr == "/" && number2 == 0)
+                    if (operatorr == "/" && number1 == 0)
                     {
                         throw new ArgumentException("Division by zero is not allowed");
                     }
@@ -391,7 +378,7 @@ namespace SpreadsheetUtilities
         /// </summary>
         public IEnumerable<String> GetVariables()
     {
-            if (tokens == null || normalizer == null) return Enumerable.Empty<string>();
+            if (tokens == null) return Enumerable.Empty<string>();
 
             HashSet<string> normalizedVariables = new HashSet<string>();
 
@@ -399,7 +386,7 @@ namespace SpreadsheetUtilities
         {
                 if (IsVariable(token))
                 {
-                    string normalizedVariable = normalizer(token);
+                    string normalizedVariable = normalizer != null ? normalizer(token) : token;
                     normalizedVariables.Add(normalizedVariable);
                 }
         }
@@ -420,10 +407,6 @@ namespace SpreadsheetUtilities
     /// </summary>
     public override string ToString()
     {
-            if (tokens == null)
-            {
-                return ""; // or some other appropriate response when tokens are null
-            }
 
             StringBuilder sb = new StringBuilder();
             foreach (var token in tokens)
@@ -432,7 +415,6 @@ namespace SpreadsheetUtilities
                 {
                     if (normalizer == null)
                     {
-                        // Handle the case where normalizer is null
                         sb.Append(token); // Append the token as is, or handle differently
                     }
                     else
@@ -559,7 +541,8 @@ namespace SpreadsheetUtilities
     /// followed by zero or more letters, digits, or underscores; a double literal; and anything that doesn't
     /// match one of those patterns.  There are no empty tokens, and no token contains white space.
     /// </summary>
-    public static IEnumerable<string> GetTokens(String formula)
+    /// <param name="formula"></param>
+    private static IEnumerable<string> GetTokens(String formula)
     {
       // Patterns for individual tokens
       String lpPattern = @"\(";
@@ -585,12 +568,21 @@ namespace SpreadsheetUtilities
     }
 
       
-
+        /// <summary>
+        /// Helper method for logic, checking if given token is a double value
+        /// </summary>
+        /// <param name="token"></param>
+        /// <returns></returns>
         private bool IsNumeric(string token)
         {
             return double.TryParse(token, out _);
         }
 
+        /// <summary>
+        /// Helper method for variables, Confirms if they are infact variables
+        /// </summary>
+        /// <param name="token"></param>
+        /// <returns></returns>
         private static bool IsVariable(string token)
         {
             // Adapted from the isVariable method in Evaluator class
@@ -599,6 +591,11 @@ namespace SpreadsheetUtilities
             return Regex.IsMatch(token, pattern);
         }
 
+        /// <summary>
+        /// Helper method for if the given token is a operator, returns true if so
+        /// </summary>
+        /// <param name="token"></param>
+        /// <returns></returns>
         private static bool IsOperator(string token)
         {
             // Define the operator pattern

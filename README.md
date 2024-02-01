@@ -24,6 +24,10 @@ getting variables to correctly work with parenthesis.
     1. DependencyGraph: Predicted Hours: 10   Actual Hours: 10
     2. DependencyGraphTester: Predicted Hours: 5 Actual Hours: 2
 
+    1. Formula: Predicted Hours: 10 Actual hours: ~15
+    2. FormulaTests: Predicted Hours: 3 Actual Hours: 3
+
+
     Time Breakdown Assignment 1 - 
     My first day working on this, I spent about 4 or 5 hours just writing all the base code without debugging
     to kind of work my way and get a feel for how I thought the code would best work. The next day I spent about 4
@@ -38,3 +42,10 @@ getting variables to correctly work with parenthesis.
     the code and then probably 2 hours debugging and getting the tests to work. I would say that the tests provided to us 
     were adequate at testing the big cases while I only needed to really look into a small number of problems regarding other methods. 
     I then made a few extra test cases in the Tester class to ensure my code coverage was as much as I could possibly get. 
+
+    Time Breakdown Assignment 3 -
+    I didnt think I would be spending alot of time on the source code because I had already done it in assignment 1 and then revised
+    it, but of course, I had to spend more time then I had anticipated because I kept running into walls. Mostly because when I first
+    implemented the formula method, I had messed up on the way the strings were added to the tokens list and I couldnt figure out what
+    was going wrong for the longest time, and come to find out it was literally only like 2 lines of code I was missing that was messing
+    everything else up lol. After I fixed that it was pretty much good except for writing the tests took alot of time as well. 
