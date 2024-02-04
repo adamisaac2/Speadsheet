@@ -8,13 +8,16 @@ Commit Date: 1-18-2024
 Solution:   Spreadsheet
 Copyright:  CS 3500 and [Adam Isaac] - This work may not be copied for use in Academic Coursework.
 
-# Overview of the Spreadsheet functionality
+# Overview of the Spreadsheet functionality, Updated After Assignment 3
+
 
 The Spreadsheet program is currently capable of not very much. I definitely underestimated
 how easy this was going to be. Its extremely buggy at the moment and can only do a certain amount
 of features. It is especially buggy when it contains complex expressions using parenthesis and when 
 variables and parenthesis are used in the same expression.Future extensions are bug fixing and 
-getting variables to correctly work with parenthesis.
+getting variables to correctly work with parenthesis. -- Update A3 -- While the spreadsheet functionality still is not available, I have
+updated the mathematical side of it, so that the spreadsheet(when implemented) can actually evaluate full functions using PEMDAS without
+completely being wrong. It can now evaluate expressions correctly. 
 
 # Time Expenditures:
 

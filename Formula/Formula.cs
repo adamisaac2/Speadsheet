@@ -1,6 +1,8 @@
 ﻿
 /// <summary>
-/// Represents the main formula class, contains all methods and handling for all classes. 
+/// Represents the main formula class, contains all methods and handling for all methods. 
+/// The formula class is used for evaluating mathematical expressions that are passed as formulas.
+///It can evaluate formulas that contain variables and uses PEMDAS to evaluate expressions correctly.
 /// </summary>
 /// <author>Adam Isaac</author>
 /// <created>Feb 1, 2024</created>
@@ -75,12 +77,13 @@ namespace SpreadsheetUtilities
     /// new Formula("2x+y3", N, V) should throw an exception, since "2x+y3" is syntactically incorrect.
     /// </summary>
    
-    private List<string> tokens = new List<string>();
-        private Func<string, string> normalizer;
+      private List<string> tokens = new List<string>();
+      private Func<string, string> normalizer;
     public Formula(String formula, Func<string, string> normalize, Func<string, bool> isValid)
     {
+           //Initiate normalizer
             normalizer = normalize ?? (s => s);
-
+            //throw formula exception for if the formula is empty
             if (String.IsNullOrWhiteSpace(formula))
             {
                 throw new FormulaFormatException("The formula cannot be empty or whitespace.");
@@ -89,6 +92,7 @@ namespace SpreadsheetUtilities
             int parenthesesBalance = 0;
             bool previousTokenWasOperatorOrOpeningParenthesis = true;
 
+            //foreach loop to validate the formula
             foreach (var token in GetTokens(formula))
             {
                 // Check for balanced parentheses and valid token order
@@ -114,6 +118,7 @@ namespace SpreadsheetUtilities
                         throw new FormulaFormatException("Two operators in a row or operator after opening parenthesis.");
                     }
                     previousTokenWasOperatorOrOpeningParenthesis = true;
+                   
                     if (IsOperator(token))
                     {
                         tokens.Add(token);
@@ -148,12 +153,12 @@ namespace SpreadsheetUtilities
                 }
             }
 
-            if (parenthesesBalance != 0)
+            if (parenthesesBalance != 0) //Check for valid parenthesis
             {
                 throw new FormulaFormatException("Unbalanced parentheses in the formula.");
             }
 
-            if (previousTokenWasOperatorOrOpeningParenthesis)
+            if (previousTokenWasOperatorOrOpeningParenthesis) //check for valid syntax
             {
                 throw new FormulaFormatException("Formula ends with an operator.");
             }
@@ -190,20 +195,14 @@ namespace SpreadsheetUtilities
                 foreach (string token in tokens)
                 {
 
-                    Console.WriteLine("Token: " + token);
-                    Console.WriteLine("Value Stack: " + string.Join(", ", value));
-                    Console.WriteLine("Operand Stack: " + string.Join(", ", operators));
-                    Console.WriteLine("");
 
-
-
-                    if (IsNumeric(token))
+                    if (IsNumeric(token)) //Check if the token is a number, if so copy to a new variable and push on to stack. 
                     {
                         double tokenDigit;
                         double.TryParse(token, out tokenDigit);
                         value.Push(tokenDigit);
 
-                        while (operators.Count > 0 && (operators.Peek() == "*" || operators.Peek() == "/"))
+                        while (operators.Count > 0 && (operators.Peek() == "*" || operators.Peek() == "/")) //while loop for if * or / is on the stack
                         {
 
 
@@ -211,7 +210,7 @@ namespace SpreadsheetUtilities
                             string operand1 = operators.Pop();
                             double number1 = value.Pop();
 
-                            if(operand1 == "/" && number2 == 0)
+                            if(operand1 == "/" && number2 == 0) //Division by zero 
                             {
                                 throw new ArgumentException();
                             }
@@ -222,7 +221,7 @@ namespace SpreadsheetUtilities
                         }
 
                     }
-                    else if (IsOperator(token) && (token == "+" || token == "-"))
+                    else if (IsOperator(token) && (token == "+" || token == "-")) //Checking if tokens are + or -. Follow steps accordingly. 
                     {
                         while (operators.Count > 0 && (operators.Peek() == "+" || operators.Peek() == "-" || operators.Peek() == "*" || operators.Peek() == "/"))
                         {
@@ -234,16 +233,16 @@ namespace SpreadsheetUtilities
                         }
                         operators.Push(token);
                     }
-                    else if (IsOperator(token) && (token == "*" || token == "/"))
+                    else if (IsOperator(token) && (token == "*" || token == "/")) //if operator is * or / add it to the stack.
                     {
                         operators.Push(token);
                         continue;
                     }
-                    else if (token == "(")
+                    else if (token == "(") //add parenthesis to stack
                     {
                         operators.Push(token);
                     }
-                    else if (token == ")")
+                    else if (token == ")") //when right parenthesis is encountered, the program should evaluate inside parentehsis. 
                     {
                         while (operators.Count > 0 && operators.Peek() != "(")
                         {
@@ -251,7 +250,7 @@ namespace SpreadsheetUtilities
                             double number2 = value.Pop();
                             String operatorr = operators.Pop();
                             double final = 0;
-                            switch (operatorr)
+                            switch (operatorr) //using a switch for different cases of + -, *, / so that it can be any operation. 
                             {
                                 case "+":
                                     final = number2 + number1;
@@ -265,7 +264,7 @@ namespace SpreadsheetUtilities
                                 case "/":
                                     if (number2 == 0)
                                     {
-                                        throw new ArgumentException("Cannot divide by zero.");
+                                        throw new ArgumentException("Cannot divide by zero."); //divide by zero exception
                                     }
                                     final = number2 / number1;
                                     break;
@@ -277,20 +276,20 @@ namespace SpreadsheetUtilities
                         operators.Pop();
                     }
 
-                    else if (IsVariable(token))
+                    else if (IsVariable(token)) //Evaluate variables using the lookup value of the variable
                     {
                         try
                         {
 
                             value.Push(lookup(token));
                         }
-                        catch (ArgumentException)
+                        catch (ArgumentException) //throw a formula error if the variable is undefined
                         {
                             return new FormulaError($"Undefined variable: {token}");
                         }
                     }
 
-                   else if (operators.Count > 0 && (operators.Peek() == "("))
+                   else if (operators.Count > 0 && (operators.Peek() == "("))//popping left parenthesis off the stack after the right parenthesis is encountered
                     {
                         operators.Pop();
                     }
@@ -310,26 +309,23 @@ namespace SpreadsheetUtilities
 
                 }
 
-                Console.WriteLine("Before final evaluation:");
-                Console.WriteLine("Value Stack: " + string.Join(", ", value));
-                Console.WriteLine("Operand Stack: " + string.Join(", ", operators));
+                
 
 
-
-                while (operators.Count > 0)
+                while (operators.Count > 0) //Final evaluation loop
                 {
                    
                     double number2 = value.Pop();
                     double number1 = value.Pop();
                     string operatorr = operators.Pop();
 
-                    if (operatorr == "/" && number1 == 0)
+                    if (operatorr == "/" && number1 == 0)//divide by zero exception
                     {
                         throw new ArgumentException("Division by zero is not allowed");
                     }
 
                     double final;
-                    switch (operatorr)
+                    switch (operatorr) //Using a switch so that all the operations can be covered in the final loop
                     {
                         case "+":
                             final = number1 + number2;
@@ -343,7 +339,7 @@ namespace SpreadsheetUtilities
                         case "/":
                             if (number1 == 0)
                             {
-                                throw new ArgumentException("Cannot divide by zero.");
+                                throw new ArgumentException("Cannot divide by zero."); //divide by zero exception
                             }
                             final = number2 / number1;
                             break;
@@ -376,42 +372,43 @@ namespace SpreadsheetUtilities
         /// new Formula("x+X*z", N, s => true).GetVariables() should enumerate "X" and "Z".
         /// new Formula("x+X*z").GetVariables() should enumerate "x", "X", and "z".
         /// </summary>
-        public IEnumerable<String> GetVariables()
-    {
+        public IEnumerable<String> GetVariables() //returns the variables value if it has one
+        {
             if (tokens == null) return Enumerable.Empty<string>();
 
             HashSet<string> normalizedVariables = new HashSet<string>();
 
-        foreach(var token in tokens)
-        {
+            foreach (var token in tokens)
+            {
                 if (IsVariable(token))
                 {
+                    //checks if the normalizer is null, if not it passes token as the argument and assigns the result to normalized variable
                     string normalizedVariable = normalizer != null ? normalizer(token) : token;
                     normalizedVariables.Add(normalizedVariable);
                 }
+            }
+
+            return normalizedVariables;
+
         }
 
-        return normalizedVariables;
-
-    }
-
-    /// <summary>
-    /// Returns a string containing no spaces which, if passed to the Formula
-    /// constructor, will produce a Formula f such that this.Equals(f).  All of the
-    /// variables in the string should be normalized.
-    /// 
-    /// For example, if N is a method that converts all the letters in a string to upper case:
-    /// 
-    /// new Formula("x + y", N, s => true).ToString() should return "X+Y"
-    /// new Formula("x + Y").ToString() should return "x+Y"
-    /// </summary>
-    public override string ToString()
-    {
+        /// <summary>
+        /// Returns a string containing no spaces which, if passed to the Formula
+        /// constructor, will produce a Formula f such that this.Equals(f).  All of the
+        /// variables in the string should be normalized.
+        /// 
+        /// For example, if N is a method that converts all the letters in a string to upper case:
+        /// 
+        /// new Formula("x + y", N, s => true).ToString() should return "X+Y"
+        /// new Formula("x + Y").ToString() should return "x+Y"
+        /// </summary>
+        public override string ToString()
+        {
 
             StringBuilder sb = new StringBuilder();
             foreach (var token in tokens)
             {
-                if (IsVariable(token))
+                if (IsVariable(token)) //writing variables to strings
                 {
                     if (normalizer == null)
                     {
@@ -432,31 +429,31 @@ namespace SpreadsheetUtilities
 
         }
 
-    /// <summary>
-    ///  <change> make object nullable </change>
-    ///
-    /// If obj is null or obj is not a Formula, returns false.  Otherwise, reports
-    /// whether or not this Formula and obj are equal.
-    /// 
-    /// Two Formulae are considered equal if they consist of the same tokens in the
-    /// same order.  To determine token equality, all tokens are compared as strings 
-    /// except for numeric tokens and variable tokens.
-    /// Numeric tokens are considered equal if they are equal after being "normalized" 
-    /// by C#'s standard conversion from string to double, then back to string. This 
-    /// eliminates any inconsistencies due to limited floating point precision.
-    /// Variable tokens are considered equal if their normalized forms are equal, as 
-    /// defined by the provided normalizer.
-    /// 
-    /// For example, if N is a method that converts all the letters in a string to upper case:
-    ///  
-    /// new Formula("x1+y2", N, s => true).Equals(new Formula("X1  +  Y2")) is true
-    /// new Formula("x1+y2").Equals(new Formula("X1+Y2")) is false
-    /// new Formula("x1+y2").Equals(new Formula("y2+x1")) is false
-    /// new Formula("2.0 + x7").Equals(new Formula("2.000 + x7")) is true
-    /// </summary>
-    public override bool Equals(object? obj)
+        /// <summary>
+        ///  <change> make object nullable </change>
+        ///
+        /// If obj is null or obj is not a Formula, returns false.  Otherwise, reports
+        /// whether or not this Formula and obj are equal.
+        /// 
+        /// Two Formulae are considered equal if they consist of the same tokens in the
+        /// same order.  To determine token equality, all tokens are compared as strings 
+        /// except for numeric tokens and variable tokens.
+        /// Numeric tokens are considered equal if they are equal after being "normalized" 
+        /// by C#'s standard conversion from string to double, then back to string. This 
+        /// eliminates any inconsistencies due to limited floating point precision.
+        /// Variable tokens are considered equal if their normalized forms are equal, as 
+        /// defined by the provided normalizer.
+        /// 
+        /// For example, if N is a method that converts all the letters in a string to upper case:
+        ///  
+        /// new Formula("x1+y2", N, s => true).Equals(new Formula("X1  +  Y2")) is true
+        /// new Formula("x1+y2").Equals(new Formula("X1+Y2")) is false
+        /// new Formula("x1+y2").Equals(new Formula("y2+x1")) is false
+        /// new Formula("2.0 + x7").Equals(new Formula("2.000 + x7")) is true
+        /// </summary>
+        public override bool Equals(object? obj)
     {
-            if (obj == null || GetType() != obj.GetType())
+            if (obj == null || GetType() != obj.GetType()) //if the obj is null return false
             {
                 return false;
             }
@@ -468,7 +465,7 @@ namespace SpreadsheetUtilities
                 return false; // One of the tokens lists is null
             }
 
-            if (this.tokens.Count != other.tokens.Count)
+            if (this.tokens.Count != other.tokens.Count) //Counts differ return false
             {
                 return false;
             }
@@ -572,7 +569,7 @@ namespace SpreadsheetUtilities
         /// Helper method for logic, checking if given token is a double value
         /// </summary>
         /// <param name="token"></param>
-        /// <returns></returns>
+        /// <returns>true or false if the token is a double value</returns>
         private bool IsNumeric(string token)
         {
             return double.TryParse(token, out _);
@@ -582,7 +579,7 @@ namespace SpreadsheetUtilities
         /// Helper method for variables, Confirms if they are infact variables
         /// </summary>
         /// <param name="token"></param>
-        /// <returns></returns>
+        /// <returns>returns true or false if token is a variable</returns>
         private static bool IsVariable(string token)
         {
             // Adapted from the isVariable method in Evaluator class
@@ -595,7 +592,7 @@ namespace SpreadsheetUtilities
         /// Helper method for if the given token is a operator, returns true if so
         /// </summary>
         /// <param name="token"></param>
-        /// <returns></returns>
+        /// <returns>true or false if the token is an operator</returns>
         private static bool IsOperator(string token)
         {
             // Define the operator pattern
@@ -640,8 +637,6 @@ namespace SpreadsheetUtilities
     }
 
 }
-
-
 
 
 // <change>
