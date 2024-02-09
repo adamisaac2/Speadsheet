@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using SpreadsheetUtilities;
 
@@ -11,7 +12,7 @@ namespace SS
     public class Spreadsheet : AbstractSpreadsheet
     {
         // Dictionary to hold cell names and their contents
-        private Dictionary<string, Cell> cells = new Dictionary<string, Cell>();
+        private Dictionary<string, object> cells = new Dictionary<string, object>();
 
         // A DependencyGraph to track dependencies between cells
         private DependencyGraph dependencies = new DependencyGraph();
@@ -39,7 +40,7 @@ namespace SS
             else
             {
                 // Update existing cells content
-                cells[name].Content = number;
+                cells[name] = new Cell(number);
             }
 
             // Update dependencies and calculate affected cells
@@ -58,7 +59,7 @@ namespace SS
         public override object GetCellContents(string name)
         {
             // Validate the cell name
-            if (string.IsNullOrEmpty(name) || !IsValidCellName(name))
+            if (string.IsNullOrEmpty(name) || !IsValidName(name))
             {
                 throw new InvalidNameException();
             }
@@ -66,7 +67,7 @@ namespace SS
             // Check if the cell exists and return its contents
             if (cells.ContainsKey(name))
             {
-                return cells[name].Content;
+                return cells[name];
             }
             else
             {
@@ -91,7 +92,24 @@ namespace SS
 
         public override ISet<string> SetCellContents(string name, Formula formula)
         {
-            throw new NotImplementedException();
+            if (formula == null)
+                throw new ArgumentNullException(nameof(formula));
+
+            if (string.IsNullOrEmpty(name) || !IsValidName(name))
+                throw new InvalidNameException();
+
+            // Check for circular dependencies before adding the formula
+            if (CreatesCircularDependency(name, formula))
+                throw new CircularException();
+
+            // Assuming a method to update or add to the dependency graph
+            UpdateDependencies(name, formula);
+
+            // Set the cell's content to the formula
+            cells[name] = formula;
+
+            // Calculate the set of cells affected by this change
+            return GetAffectedCells(name);
         }
 
         protected override IEnumerable<string> GetDirectDependents(string name)
@@ -100,29 +118,104 @@ namespace SS
         }
 
 
-        // Example helper method to validate cell names according to your specifications
-        private bool IsValidCellName(string name)
+        private ISet<string> GetAffectedCells(string name)
         {
-            // Implement the logic to validate a cell name.
-            // This might involve regex to check the format, or other rules specific to your application.
-            return true; // Placeholder implementation
+            // Implement logic to calculate and return the set of cells affected by the change to 'name'
+            // This includes 'name' and any cells that are directly or indirectly dependent on 'name'
+            return new HashSet<string>(); // Placeholder implementation
         }
+
+        private void UpdateDependencies(string name, Formula formula)
+        {
+            // First, remove all existing dependencies for this cell
+            dependencies.ReplaceDependees(name, new HashSet<string>());
+
+            // Now, add new dependencies based on the variables in the formula
+            foreach (var variable in formula.GetVariables())
+            {
+                dependencies.AddDependency(name, variable);
+            }
+        }
+
+        private bool CreatesCircularDependency(string name, Formula formula)
+        {
+            // Temporarily update the dependency graph with the new formula
+            var originalDependees = new HashSet<string>(dependencies.GetDependees(name));
+            dependencies.ReplaceDependees(name, new HashSet<string>(formula.GetVariables()));
+
+            bool hasCycle = HasCycle(name);
+
+            // Revert the dependency graph to its original state if a circular dependency is detected
+            if (hasCycle)
+            {
+                dependencies.ReplaceDependees(name, originalDependees);
+            }
+
+            return hasCycle;
+        }
+        private bool HasCycle(string startCell)
+        {
+            var visited = new HashSet<string>();
+            var stack = new HashSet<string>();
+
+            return CheckCycle(startCell, visited, stack);
+        }
+        private bool CheckCycle(string currentCell, HashSet<string> visited, HashSet<string> stack)
+        {
+            // If we haven't visited this cell yet
+            if (!visited.Contains(currentCell))
+            {
+                visited.Add(currentCell);
+                stack.Add(currentCell);
+
+                foreach (var dependent in dependencies.GetDependents(currentCell))
+                {
+                    // If the next cell hasn't been visited and is part of a cycle, or
+                    // if it's already in the stack (meaning we've looped back), we have a cycle
+                    if (!visited.Contains(dependent) && CheckCycle(dependent, visited, stack) || stack.Contains(dependent))
+                    {
+                        return true;
+                    }
+                }
+            }
+
+            // Remove the cell from the stack before returning to previous call
+            stack.Remove(currentCell);
+            return false;
+        }
+
 
         // Helper method to validate cell names
         private bool IsValidName(string name)
         {
-            // Implement name validation logic according to your rules
-            return true; // Placeholder return
+            // Regular expression pattern to match valid cell names
+            // ^ asserts position at start of a line
+            // [_a-zA-Z] matches any underscore or letter at the beginning
+            // [_a-zA-Z0-9]* matches zero or more of underscores, letters, or digits thereafter
+            // $ asserts position at the end of a line
+
+            string pattern = @"^[_a-zA-Z][_a-zA-Z0-9]*$";
+            return Regex.IsMatch(name, pattern);
         }
 
         //Inner class to represent cells and their content
         private class Cell
         {
-            public object Content { get; set; }
+            public object Content { get; private set; }
 
-            public Cell(object content)
+            public Cell(double number)
             {
-                Content = content;
+                this.Content = number;
+            }
+
+            public Cell(string text)
+            {
+                this.Content = text;
+            }
+
+            public Cell(Formula formula)
+            {
+                this.Content = formula;
             }
         }
 
