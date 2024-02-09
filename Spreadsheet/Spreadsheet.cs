@@ -82,7 +82,30 @@ namespace SS
 
         public override IEnumerable<string> GetNamesOfAllNonemptyCells()
         {
-            throw new NotImplementedException();
+            foreach (var pair in cells)
+            {
+                // Cast to Cell if it is a Cell, otherwise null.
+                Cell cell = pair.Value as Cell;
+
+                // If the cast is successful and the cell is not empty, yield return the cell's name.
+                if (cell != null && !IsEmptyCell(cell))
+                {
+                    yield return pair.Key;
+                }
+            }
+        }
+
+        private bool IsEmptyCell(Cell cell)
+        {
+            // You need to define what "empty" means for your cells.
+            // For example, if Content is a string, check if it's not null or empty.
+            // If Content is a double, check if it's not equal to 0, and so on.
+
+            // Adjust these checks based on the actual content types and how you define "empty" for each.
+            return cell.Content == null ||
+                   (cell.Content is string str && string.IsNullOrEmpty(str)) ||
+                   (cell.Content is double num && num == 0.0);
+           
         }
 
         public override ISet<string> SetCellContents(string name, string text)
@@ -102,12 +125,15 @@ namespace SS
             if (CreatesCircularDependency(name, formula))
                 throw new CircularException();
 
+
+
+            // Set the cell's content to the formula
+            cells[name] = new Cell(formula);
+
             // Assuming a method to update or add to the dependency graph
             UpdateDependencies(name, formula);
 
-            // Set the cell's content to the formula
-            cells[name] = formula;
-
+           GetCellsToRecalculate(name);
             ISet<string> affectedCells = GetAffectedCells(name);
             // Calculate the set of cells affected by this change
             return affectedCells;
@@ -115,26 +141,37 @@ namespace SS
 
         protected override IEnumerable<string> GetDirectDependents(string name)
         {
-            throw new NotImplementedException();
+            if (name == null)
+            {
+                throw new ArgumentNullException(nameof(name));
+            }
+
+            if (!IsValidName(name))
+            {
+                throw new InvalidNameException();
+            }
+
+            // The DependencyGraph class might provide a method like this:
+            return dependencies.GetDependents(name);
         }
 
 
         public ISet<string> GetAffectedCells(string name)
         {
-            var affectedCells = new HashSet<string>();
-            var toVisit = new Queue<string>();
-            toVisit.Enqueue(name);
+            HashSet<string> affectedCells = new HashSet<string>();
+            Queue<string> cellsToCheck = new Queue<string>();
+            cellsToCheck.Enqueue(name);
 
-            while (toVisit.Count > 0)
+            while (cellsToCheck.Count > 0)
             {
-                var current = toVisit.Dequeue();
-                affectedCells.Add(current);
+                string currentCell = cellsToCheck.Dequeue();
+                affectedCells.Add(currentCell);
 
-                foreach (var dependent in dependencies.GetDependents(current))
+                foreach (string dependent in GetDirectDependents(currentCell))
                 {
                     if (!affectedCells.Contains(dependent))
                     {
-                        toVisit.Enqueue(dependent);
+                        cellsToCheck.Enqueue(dependent);
                     }
                 }
             }

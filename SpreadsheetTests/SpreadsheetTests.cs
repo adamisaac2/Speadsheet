@@ -132,9 +132,41 @@ namespace SpreadsheetTests
             CollectionAssert.AreEquivalent(expectedAffectedCells.ToList(), affectedCells.ToList(), "All direct and indirect dependents should be returned.");
         }
 
+        [TestMethod]
+        [ExpectedException(typeof(CircularException))]
+        public void SetCellContents_ShouldThrowCircularException_WhenCircularDependencyDetected()
+        {
+            // Arrange
+            var spreadsheet = new Spreadsheet(); // Replace with your actual class that contains CheckCycle
+            spreadsheet.SetCellContents("A1", new Formula("B1 + 1"));
+            spreadsheet.SetCellContents("B1", new Formula("C1 + 1"));
+            spreadsheet.SetCellContents("C1", new Formula("A1 + 1")); // This will create a circular dependency
+
+            // Act
+            // This line should trigger CheckCycle indirectly and throw a CircularException due to the circular reference
+            spreadsheet.SetCellContents("A1", new Formula("B1 * 2"));
+
+            // Assert is handled by ExpectedException
+        }
 
 
+        [TestMethod]
+        public void GetNamesOfAllNonemptyCells_ReturnsNonEmptyCellNames()
+        {
+            // Arrange
+            var spreadsheet = new Spreadsheet();
+            spreadsheet.SetCellContents("A1", 5.0);
+            spreadsheet.SetCellContents("B1", "");
+            spreadsheet.SetCellContents("C1", "Hello");
+            spreadsheet.SetCellContents("D1", new Formula("A1 * 2"));
 
+            // Act
+            var nonEmptyCells = spreadsheet.GetNamesOfAllNonemptyCells().ToList();
+
+            // Assert
+            var expectedNonEmptyCells = new List<string> { "A1", "C1", "D1" }; // "B1" is empty and should not be included
+            CollectionAssert.AreEquivalent(expectedNonEmptyCells, nonEmptyCells, "The method should return the names of non-empty cells only.");
+        }
 
 
 
