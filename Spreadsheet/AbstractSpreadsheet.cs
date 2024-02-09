@@ -286,13 +286,16 @@ namespace SS
         {
             LinkedList<String> changed = new LinkedList<String>();
             HashSet<String>    visited = new HashSet<String>();
+           //For each loop that goes through the parameter set names
             foreach (String name in names)
             {
+               //If the set does not contain a name, call the visit method with the 4 parameters.
                 if (!visited.Contains(name))
                 {
                     Visit(name, name, visited, changed);
                 }
             }
+           //Return the changed cell
             return changed;
         }
 
