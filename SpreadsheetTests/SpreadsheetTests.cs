@@ -86,8 +86,31 @@ namespace SpreadsheetTests
             // Assert is handled by ExpectedException
         }
 
-
-
+        [TestMethod]
+        [ExpectedException(typeof(InvalidNameException))]
+        public void SetCellContents_ThrowsInvalidNameException_WhenNameIsInvalid()
+        {
+            var spreadsheet = new Spreadsheet();
+            var formula = new Formula("2+2"); // Assuming a valid formula for the test
+            spreadsheet.SetCellContents("123InvalidName", formula); // This should throw an InvalidNameException
+        }
+        [TestMethod]
+        [ExpectedException(typeof(ArgumentNullException))]
+        public void SetCellContents_ThrowsArgumentNullException_WhenNameIsNull()
+        {
+            var spreadsheet = new Spreadsheet();
+            var formula = new Formula(null); // Assuming a valid formula for the test
+            spreadsheet.SetCellContents(null, formula); // This should throw an InvalidNameException
+        }
+        [TestMethod]
+        [ExpectedException(typeof(CircularException))]
+        public void SetCellContents_ThrowsCircularException_WhenCircularDependencyIsCreated()
+        {
+            var spreadsheet = new Spreadsheet();
+            spreadsheet.SetCellContents("A1", new Formula("B1 + 1"));
+            spreadsheet.SetCellContents("B1", new Formula("C1 + 1"));
+            spreadsheet.SetCellContents("C1", new Formula("A1 + 1")); // This should create a circular dependency and throw a CircularException
+        }
 
 
     }
