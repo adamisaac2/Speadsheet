@@ -110,7 +110,32 @@ namespace SS
 
         public override ISet<string> SetCellContents(string name, string text)
         {
-            throw new NotImplementedException();
+            // Validate parameters
+            if (text == null)
+                throw new ArgumentNullException(nameof(text));
+            if (string.IsNullOrEmpty(name) || !IsValidName(name))
+                throw new InvalidNameException();
+
+            // Update or create the cell with the new content
+            if (cells.ContainsKey(name))
+            {
+                // If the text is empty, it implies the cell should be removed from the dictionary
+                if (string.IsNullOrEmpty(text))
+                    cells.Remove(name);
+                else
+                    cells[name] = new Cell(text);
+            }
+            else if (!string.IsNullOrEmpty(text))
+            {
+                cells.Add(name, new Cell(text));
+            }
+
+            // Since we are setting text, we can remove all dependents of this cell
+            // because text cannot have dependents
+            dependencies.ReplaceDependents(name, new HashSet<string>());
+
+            // Retrieve and return all affected cells
+            return GetAffectedCells(name);
         }
 
         public override ISet<string> SetCellContents(string name, Formula formula)

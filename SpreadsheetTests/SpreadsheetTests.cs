@@ -168,10 +168,60 @@ namespace SpreadsheetTests
             CollectionAssert.AreEquivalent(expectedNonEmptyCells, nonEmptyCells, "The method should return the names of non-empty cells only.");
         }
 
+        [TestMethod]
+        [ExpectedException(typeof(ArgumentNullException))]
+        public void SetCellContents_ThrowsArgumentNullException_WhenTextIsNull()
+        {
+            // Arrange
+            var spreadsheet = new Spreadsheet();
 
+            // Act
+            spreadsheet.SetCellContents("A1", null as string);
 
+            // Assert is handled by ExpectedException
+        }
 
+        [TestMethod]
+        [ExpectedException(typeof(InvalidNameException))]
+        public void SetCellContents_ThrowsInvalidNameException_WhenNameIsNull()
+        {
+            // Arrange
+            var spreadsheet = new Spreadsheet();
 
+            // Act
+            spreadsheet.SetCellContents(null, "text");
+
+            // Assert is handled by ExpectedException
+        }
+
+        [TestMethod]
+        public void SetCellContents_UpdatesCell_WhenCellAlreadyHasContent()
+        {
+            // Arrange
+            var spreadsheet = new Spreadsheet();
+            spreadsheet.SetCellContents("A1", "Initial Content");
+
+            // Act
+            spreadsheet.SetCellContents("A1", "Updated Content");
+            var content = spreadsheet.GetCellContents("A1");
+
+            // Assert
+            Assert.AreEqual("Updated Content", content, "Cell content should be updated to the new text.");
+        }
+        [TestMethod]
+        public void SetCellContents_RemovesCell_WhenTextIsEmpty()
+        {
+            // Arrange
+            var spreadsheet = new Spreadsheet();
+            spreadsheet.SetCellContents("A1", "Initial Content");
+
+            // Act
+            spreadsheet.SetCellContents("A1", "");
+            var nonEmptyCells = spreadsheet.GetNamesOfAllNonemptyCells();
+
+            // Assert
+            Assert.IsFalse(nonEmptyCells.Contains("A1"), "Cell should be removed when set with empty text.");
+        }
 
 
 
