@@ -120,9 +120,25 @@ namespace SS
 
         private ISet<string> GetAffectedCells(string name)
         {
-            // Implement logic to calculate and return the set of cells affected by the change to 'name'
-            // This includes 'name' and any cells that are directly or indirectly dependent on 'name'
-            return new HashSet<string>(); // Placeholder implementation
+            var affectedCells = new HashSet<string>();
+            var toVisit = new Queue<string>();
+            toVisit.Enqueue(name);
+
+            while (toVisit.Count > 0)
+            {
+                var current = toVisit.Dequeue();
+                affectedCells.Add(current);
+
+                foreach (var dependent in dependencies.GetDependents(current))
+                {
+                    if (!affectedCells.Contains(dependent))
+                    {
+                        toVisit.Enqueue(dependent);
+                    }
+                }
+            }
+
+            return affectedCells;
         }
 
         private void UpdateDependencies(string name, Formula formula)
