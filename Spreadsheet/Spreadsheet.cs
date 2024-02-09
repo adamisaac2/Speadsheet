@@ -21,6 +21,67 @@ namespace SS
         {
         }
 
+       
+
+        public override ISet<string> SetCellContents(string name, double number)
+        {
+           //If the name is null or empty or invalid throw an exception.
+            if (string.IsNullOrEmpty(name) || !IsValidName(name))
+            {
+                throw new InvalidNameException();
+            }
+
+            // If the cell doesnt exist, create it
+            if (!cells.ContainsKey(name))
+            {
+                cells[name] = new Cell(number);
+            }
+            else
+            {
+                // Update existing cells content
+                cells[name].Content = number;
+            }
+
+            // Update dependencies and calculate affected cells
+            var affectedCells = new HashSet<string>();
+            affectedCells.Add(name);
+            foreach (var dependent in dependencies.GetDependents(name))
+            {
+                affectedCells.Add(dependent);
+                // Recursively add indirect dependents if necessary
+            }
+
+            // Return the set of affected cells
+            return affectedCells;
+        }
+
+        public override object GetCellContents(string name)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override IEnumerable<string> GetNamesOfAllNonemptyCells()
+        {
+            throw new NotImplementedException();
+        }
+
+        public override ISet<string> SetCellContents(string name, string text)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override ISet<string> SetCellContents(string name, Formula formula)
+        {
+            throw new NotImplementedException();
+        }
+
+        protected override IEnumerable<string> GetDirectDependents(string name)
+        {
+            throw new NotImplementedException();
+        }
+
+
+
         // Helper method to validate cell names
         private bool IsValidName(string name)
         {
