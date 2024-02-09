@@ -38,6 +38,45 @@ namespace SpreadsheetTests
             // No need for an Assert statement here due to ExpectedException attribute
         }
 
+        [TestMethod]
+        public void SetCellContents_ExistingCell_UpdatesContentCorrectly()
+        {
+            // Arrange
+            var spreadsheet = new Spreadsheet();
+            string cellName = "A1";
+            spreadsheet.SetCellContents(cellName, 5.0); // Initially set the cell
+            double updatedNumber = 10.0; // New value to update the cell with
+
+            // Act
+            spreadsheet.SetCellContents(cellName, updatedNumber);
+
+            // Assert
+            var actualContent = spreadsheet.GetCellContents(cellName); // Assuming a method like this exists
+            Assert.AreEqual(updatedNumber, actualContent, "The cell content should be updated to the new number.");
+        }
+
+        [TestMethod]
+        public void SetCellContents_ChangeTriggersDirectAndIndirectDependents_CorrectlyIdentifiesAllAffected()
+        {
+            // Arrange
+            var sheet = new Spreadsheet();
+            sheet.SetCellContents("C1", 5.0); // Set initial contents
+            sheet.SetCellContents("B1", new Formula("C1 * 2")); // B1 directly depends on C1
+            sheet.SetCellContents("A1", new Formula("B1 * 2")); // A1 indirectly depends on C1 through B1
+
+            // Act
+            var affectedCells = sheet.SetCellContents("C1", 10.0); // Change C1's content
+
+            // Assert
+            Assert.IsTrue(affectedCells.Contains("C1"), "C1 should be affected.");
+            Assert.IsTrue(affectedCells.Contains("B1"), "B1 should be affected as a direct dependent.");
+            Assert.IsTrue(affectedCells.Contains("A1"), "A1 should be affected as an indirect dependent.");
+        }
+
+
+
+
+
 
     }
 }

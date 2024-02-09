@@ -57,7 +57,26 @@ namespace SS
 
         public override object GetCellContents(string name)
         {
-            throw new NotImplementedException();
+            // Validate the cell name
+            if (string.IsNullOrEmpty(name) || !IsValidCellName(name))
+            {
+                throw new InvalidNameException();
+            }
+
+            // Check if the cell exists and return its contents
+            if (cells.ContainsKey(name))
+            {
+                return cells[name].Content;
+            }
+            else
+            {
+                // If the cell doesn't exist, what should be returned?
+                // Depending on your specifications, this might return null, or throw an exception.
+                // For this example, let's assume we return an empty string to indicate no content.
+                // Adjust this behavior as needed.
+                return ""; // Or throw new ArgumentException($"Cell {name} does not exist.");
+            }
+
         }
 
         public override IEnumerable<string> GetNamesOfAllNonemptyCells()
@@ -81,6 +100,13 @@ namespace SS
         }
 
 
+        // Example helper method to validate cell names according to your specifications
+        private bool IsValidCellName(string name)
+        {
+            // Implement the logic to validate a cell name.
+            // This might involve regex to check the format, or other rules specific to your application.
+            return true; // Placeholder implementation
+        }
 
         // Helper method to validate cell names
         private bool IsValidName(string name)
