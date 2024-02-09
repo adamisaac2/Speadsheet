@@ -72,7 +72,19 @@ namespace SpreadsheetTests
             Assert.IsTrue(affectedCells.Contains("B1"), "B1 should be affected as a direct dependent.");
             Assert.IsTrue(affectedCells.Contains("A1"), "A1 should be affected as an indirect dependent.");
         }
+        [TestMethod]
+        [ExpectedException(typeof(InvalidNameException))]
+        public void GetCellContents_NullName_ThrowsInvalidNameException()
+        {
+            // Arrange
+            var spreadsheet = new Spreadsheet();
+            string cellName = null;
 
+            // Act
+            spreadsheet.GetCellContents(cellName);
+
+            // Assert is handled by ExpectedException
+        }
 
 
 
