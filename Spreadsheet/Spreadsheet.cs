@@ -108,8 +108,9 @@ namespace SS
             // Set the cell's content to the formula
             cells[name] = formula;
 
+            ISet<string> affectedCells = GetAffectedCells(name);
             // Calculate the set of cells affected by this change
-            return GetAffectedCells(name);
+            return affectedCells;
         }
 
         protected override IEnumerable<string> GetDirectDependents(string name)
@@ -118,7 +119,7 @@ namespace SS
         }
 
 
-        private ISet<string> GetAffectedCells(string name)
+        public ISet<string> GetAffectedCells(string name)
         {
             var affectedCells = new HashSet<string>();
             var toVisit = new Queue<string>();
