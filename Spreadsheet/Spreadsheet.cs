@@ -64,7 +64,7 @@ namespace SS
 
             // Set the cell's content to the formula
             cells[name] = new Cell(formula);
-            Console.WriteLine($"Updated cell {name} with formula."); // Debugging line
+            Console.WriteLine($"Updated cell {name} with {formula}."); // Debugging line
 
             // Assuming a method to update or add to the dependency graph
             UpdateDependencies(name, formula);
@@ -114,19 +114,28 @@ namespace SS
 
         public override ISet<string> SetCellContents(string name, double number)
         {
-           //If the name is null or empty or invalid throw an exception.
+
+            Console.WriteLine($"Debug: Setting cell {name} to number {number}.");
+
+            //If the name is null or empty or invalid throw an exception.
             if (string.IsNullOrEmpty(name) || !IsValidName(name))
             {
+                Console.WriteLine("Debug: InvalidNameException thrown due to invalid or null name.");
+
                 throw new InvalidNameException();
             }
 
             // If the cell doesnt exist, create it
             if (!cells.ContainsKey(name))
             {
+                Console.WriteLine($"Debug: Cell {name} does not exist. Creating new cell.");
+
                 cells[name] = new Cell(number);
             }
             else
             {
+                Console.WriteLine($"Debug: Cell {name} exists. Updating content.");
+
                 // Update existing cells content
                 cells[name] = new Cell(number);
             }
@@ -134,14 +143,36 @@ namespace SS
             // Update dependencies and calculate affected cells
             var affectedCells = new HashSet<string>();
             affectedCells.Add(name);
+            Console.WriteLine($"Debug: Added {name} to affected cells.");
+
             foreach (var dependent in dependencies.GetDependents(name))
             {
-                affectedCells.Add(dependent);
+                Console.WriteLine($"Debug: Processing direct dependent {dependent} of {name}.");
+
+                AddDependentsRecursively(name, affectedCells);
                 // Recursively add indirect dependents if necessary
             }
 
+            Console.WriteLine($"Debug: Total affected cells: {affectedCells.Count}. Cells: {string.Join(", ", affectedCells)}");
+
             // Return the set of affected cells
             return affectedCells;
+        }
+
+        private void AddDependentsRecursively(string name, HashSet<string> affectedCells)
+        {
+            Console.WriteLine($"Debug: Recursively adding dependents for {name}.");
+
+            foreach (var dependent in dependencies.GetDependents(name))
+            {
+                if (affectedCells.Add(dependent)) // Ensure the dependent hasn't already been processed
+                {
+                    Console.WriteLine($"Debug: {dependent} added to affected cells. Recursively processing its dependents.");
+
+                    // Recursively add the dependents of the current dependent
+                    AddDependentsRecursively(dependent, affectedCells);
+                }
+            }
         }
 
         public override object GetCellContents(string name)
@@ -221,7 +252,7 @@ namespace SS
             HashSet<string> affectedCells = new HashSet<string>();
             Queue<string> cellsToCheck = new Queue<string>();
             cellsToCheck.Enqueue(name);
-            Console.WriteLine($"Starting with cell {name} to check for affected cells."); // Debugging line
+            Console.WriteLine($"Starting with cell {name} to check for affected cells. INITIAL STATE OF GETAFFECTEDCELLS"); // Debugging line
 
             while (cellsToCheck.Count > 0)
             {
