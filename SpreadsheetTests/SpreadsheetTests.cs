@@ -29,6 +29,23 @@ namespace SpreadsheetTests
     [TestClass]
     public class SpreadsheetTests
     {
+
+        [TestMethod]
+        [ExpectedException(typeof(ArgumentNullException))]
+        public void SetCellContents_ThrowsArgumentNullException_WhenFormulaIsNull()
+        {
+            // Arrange
+            var ss = new Spreadsheet();
+
+            // Act
+            Formula nullFormula = null;
+
+            // Act
+            ss.SetCellContents("A1", nullFormula);
+
+            // Assert is handled by ExpectedException
+        }
+
         [TestMethod]
         public void EvaluateFormula_WithEmptyReferencedCell()
         {
