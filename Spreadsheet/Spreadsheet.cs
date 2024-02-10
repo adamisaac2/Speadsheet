@@ -22,7 +22,64 @@ namespace SS
         {
         }
 
-       
+        public override ISet<string> SetCellContents(string name, Formula formula)
+        {
+            if (formula == null)
+                throw new ArgumentNullException(nameof(formula));
+
+            if (string.IsNullOrEmpty(name) || !IsValidName(name))
+                throw new InvalidNameException();
+
+            // Check for circular dependencies before adding the formula
+            if (CreatesCircularDependency(name, formula))
+                throw new CircularException();
+
+
+
+            // Set the cell's content to the formula
+            cells[name] = new Cell(formula);
+
+            // Assuming a method to update or add to the dependency graph
+            UpdateDependencies(name, formula);
+
+            GetCellsToRecalculate(name);
+            ISet<string> affectedCells = GetAffectedCells(name);
+            // Calculate the set of cells affected by this change
+            return affectedCells;
+        }
+
+
+
+        public override ISet<string> SetCellContents(string name, string text)
+        {
+            // Validate parameters
+            if (text == null)
+                throw new ArgumentNullException(nameof(text));
+            if (string.IsNullOrEmpty(name) || !IsValidName(name))
+                throw new InvalidNameException();
+
+            // Update or create the cell with the new content
+            if (cells.ContainsKey(name))
+            {
+                // If the text is empty, it implies the cell should be removed from the dictionary
+                if (string.IsNullOrEmpty(text))
+                    cells.Remove(name);
+                else
+                    cells[name] = new Cell(text);
+            }
+            else if (!string.IsNullOrEmpty(text))
+            {
+                cells.Add(name, new Cell(text));
+            }
+
+            // Since we are setting text, we can remove all dependents of this cell
+            // because text cannot have dependents
+            dependencies.ReplaceDependents(name, new HashSet<string>());
+
+            // Retrieve and return all affected cells
+            return GetAffectedCells(name);
+        }
+
 
         public override ISet<string> SetCellContents(string name, double number)
         {
@@ -108,62 +165,9 @@ namespace SS
            
         }
 
-        public override ISet<string> SetCellContents(string name, string text)
-        {
-            // Validate parameters
-            if (text == null)
-                throw new ArgumentNullException(nameof(text));
-            if (string.IsNullOrEmpty(name) || !IsValidName(name))
-                throw new InvalidNameException();
+       
 
-            // Update or create the cell with the new content
-            if (cells.ContainsKey(name))
-            {
-                // If the text is empty, it implies the cell should be removed from the dictionary
-                if (string.IsNullOrEmpty(text))
-                    cells.Remove(name);
-                else
-                    cells[name] = new Cell(text);
-            }
-            else if (!string.IsNullOrEmpty(text))
-            {
-                cells.Add(name, new Cell(text));
-            }
-
-            // Since we are setting text, we can remove all dependents of this cell
-            // because text cannot have dependents
-            dependencies.ReplaceDependents(name, new HashSet<string>());
-
-            // Retrieve and return all affected cells
-            return GetAffectedCells(name);
-        }
-
-        public override ISet<string> SetCellContents(string name, Formula formula)
-        {
-            if (formula == null)
-                throw new ArgumentNullException(nameof(formula));
-
-            if (string.IsNullOrEmpty(name) || !IsValidName(name))
-                throw new InvalidNameException();
-
-            // Check for circular dependencies before adding the formula
-            if (CreatesCircularDependency(name, formula))
-                throw new CircularException();
-
-
-
-            // Set the cell's content to the formula
-            cells[name] = new Cell(formula);
-
-            // Assuming a method to update or add to the dependency graph
-            UpdateDependencies(name, formula);
-
-           GetCellsToRecalculate(name);
-            ISet<string> affectedCells = GetAffectedCells(name);
-            // Calculate the set of cells affected by this change
-            return affectedCells;
-        }
-
+       
         protected override IEnumerable<string> GetDirectDependents(string name)
         {
             if (name == null)
