@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.Design;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -180,7 +181,17 @@ namespace SS
             // Check if the cell exists and return its contents
             if (cells.ContainsKey(name))
             {
-                return cells[name];
+                // Cast the retrieved object back to Cell before accessing its Content
+                Cell cell = cells[name] as Cell; // Cast to Cell
+                if (cell != null) // Ensure the cast is successful
+                {
+                    return cell.Content; // Now you can access the Content property
+                }
+                else
+                {
+                    // Handle the case where the cell is null or casting fails, if necessary
+                    return ""; // This is just an example. Adjust based on your needs.
+                }
             }
             else
             {
@@ -190,7 +201,7 @@ namespace SS
                 // Adjust this behavior as needed.
                 return ""; // Or throw new ArgumentException($"Cell {name} does not exist.");
             }
-
+           
         }
 
         public override IEnumerable<string> GetNamesOfAllNonemptyCells()
@@ -245,6 +256,7 @@ namespace SS
         {
             HashSet<string> affectedCells = new HashSet<string>();
             Queue<string> cellsToCheck = new Queue<string>();
+
             cellsToCheck.Enqueue(name);
             Console.WriteLine($"Starting with cell {name} to check for affected cells. INITIAL STATE OF GETAFFECTEDCELLS"); // Debugging line
 
@@ -380,6 +392,14 @@ namespace SS
             public Cell(Formula formula)
             {
                 this.Content = formula;
+            }
+        }
+
+        public class TestableSpreadsheet : Spreadsheet
+        {
+            public IEnumerable<string> TestGetDirectDependents(string name)
+            {
+                return base.GetDirectDependents(name);
             }
         }
 

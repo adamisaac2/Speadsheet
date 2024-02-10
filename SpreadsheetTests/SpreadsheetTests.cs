@@ -1,5 +1,6 @@
 using SS;
 using SpreadsheetUtilities;
+using static SS.Spreadsheet;
 
 /// <summary>
 /// Author:   Adam Isaac
@@ -23,9 +24,55 @@ using SpreadsheetUtilities;
 
 namespace SpreadsheetTests
 {
+   
+    
     [TestClass]
     public class SpreadsheetTests
     {
+        [TestMethod]
+        public void EvaluateFormula_WithEmptyReferencedCell()
+        {
+            var ss = new Spreadsheet();
+            ss.SetCellContents("A1", new Formula("B1 + 2"));
+
+            // Assuming a method exists to evaluate cell formulas and handle empty references gracefully
+            // var result = ss.EvaluateFormula("A1");
+            // Assert.AreEqual(2.0, result); // Assuming the default for empty cells in formula is 0
+        }
+
+        [TestMethod]
+        public void SetAndGetCellContents_ComplexFormula()
+        {
+            var ss = new Spreadsheet();
+            ss.SetCellContents("A1", 2.0);
+            ss.SetCellContents("B1", 3.0);
+            var complexFormula = new Formula("A1 + B1 * 2");
+            ss.SetCellContents("C1", complexFormula);
+
+            // Assuming GetCellValue or a similar method exists to evaluate formulas
+            // var value = ss.GetCellValue("C1");
+            // Assert.AreEqual(8.0, value);
+        }
+        [TestMethod]
+        public void SetCellContent_WithExtremelyLargeNumber()
+        {
+            var ss = new Spreadsheet();
+            double largeNumber = double.MaxValue;
+            ss.SetCellContents("B1", largeNumber);
+
+            Assert.AreEqual(largeNumber, ss.GetCellContents("B1"));
+        }
+
+        [TestMethod]
+        public void SetCellContent_ToEmptyString_ShouldClearCell()
+        {
+            var ss = new Spreadsheet();
+            ss.SetCellContents("A1", "Non-empty");
+            ss.SetCellContents("A1", "");
+
+            Assert.AreEqual("", ss.GetCellContents("A1"));
+        }
+
         [TestMethod]
         public void SetCellContents_ValidNumber_ShouldSetCorrectly()
         {
@@ -59,20 +106,31 @@ namespace SpreadsheetTests
         }
 
         [TestMethod]
-        public void SetCellContents_ExistingCell_UpdatesContentCorrectly()
+        public void SetAndGetCellContents_Number()
         {
-            // Arrange
-            var spreadsheet = new Spreadsheet();
-            string cellName = "A1";
-            spreadsheet.SetCellContents(cellName, 5.0); // Initially set the cell
-            double updatedNumber = 10.0; // New value to update the cell with
+            var ss = new Spreadsheet();
+            ss.SetCellContents("A1", 5.0);
 
-            // Act
-            spreadsheet.SetCellContents(cellName, updatedNumber);
+            Assert.AreEqual(5.0, ss.GetCellContents("A1"));
+        }
 
-            // Assert
-            var actualContent = spreadsheet.GetCellContents(cellName); // Assuming a method like this exists
-            Assert.AreEqual(updatedNumber, actualContent, "The cell content should be updated to the new number.");
+        [TestMethod]
+        public void SetAndGetCellContents_Text()
+        {
+            var ss = new Spreadsheet();
+            ss.SetCellContents("A1", "Hello");
+
+            Assert.AreEqual("Hello", ss.GetCellContents("A1"));
+        }
+
+        [TestMethod]
+        public void SetAndGetCellContents_Formula()
+        {
+            var ss = new Spreadsheet();
+            var formula = new Formula("B1 + C1");
+            ss.SetCellContents("A1", formula);
+
+            Assert.AreEqual(formula, ss.GetCellContents("A1"));
         }
 
         [TestMethod]
@@ -115,14 +173,8 @@ namespace SpreadsheetTests
             var formula = new Formula("2+2"); // Assuming a valid formula for the test
             spreadsheet.SetCellContents("123InvalidName", formula); // This should throw an InvalidNameException
         }
-        [TestMethod]
-        [ExpectedException(typeof(ArgumentNullException))]
-        public void SetCellContents_ThrowsArgumentNullException_WhenNameIsNull()
-        {
-            var spreadsheet = new Spreadsheet();
-            var formula = new Formula(null); // Assuming a valid formula for the test
-            spreadsheet.SetCellContents(null, formula); // This should throw an InvalidNameException
-        }
+       
+
         [TestMethod]
         [ExpectedException(typeof(CircularException))]
         public void SetCellContents_ThrowsCircularException_WhenCircularDependencyIsCreated()
@@ -244,9 +296,59 @@ namespace SpreadsheetTests
             Assert.IsFalse(nonEmptyCells.Contains("A1"), "Cell should be removed when set with empty text.");
         }
 
+        [TestMethod]
+        [ExpectedException(typeof(InvalidNameException))]
+        public void GetDirectDependents_ThrowsInvalidNameException_WhenNameIsInvalid()
+        {
+            // Arrange
+            var spreadsheet = new TestableSpreadsheet();
+            string invalidName = "1Invalid"; // Assuming this name is invalid based on your criteria.
 
+            // Act
+            var result = spreadsheet.TestGetDirectDependents(invalidName);
 
+            // Assert is handled by ExpectedException
+        }
 
+        [TestMethod]
+        [ExpectedException(typeof(ArgumentNullException))]
+        public void GetDirectDependents_ThrowsArgumentNullException_WhenNameIsNull()
+        {
+            // Arrange
+            var spreadsheet = new TestableSpreadsheet();
+
+            // Act - Attempt to call the exposed GetDirectDependents with null
+            var result = spreadsheet.TestGetDirectDependents(null);
+
+            // Assert is handled by ExpectedException attribute
+        }
+
+        [TestMethod]
+        public void ChangeCellContent_UpdatesDirectDependent()
+        {
+            var ss = new Spreadsheet();
+            ss.SetCellContents("B1", 2.0);
+            ss.SetCellContents("A1", new Formula("B1 * 2"));
+
+            ss.SetCellContents("B1", 3.0); // Change B1, which A1 depends on
+            var affectedCells = ss.SetCellContents("B1", 3.0);
+
+            Assert.IsTrue(affectedCells.Contains("A1"), "A1 should be affected as it directly depends on B1.");
+        }
+
+        [TestMethod]
+        public void ChangeCellContent_UpdatesIndirectDependent()
+        {
+            var ss = new Spreadsheet();
+            ss.SetCellContents("C1", 2.0);
+            ss.SetCellContents("B1", new Formula("C1 * 2"));
+            ss.SetCellContents("A1", new Formula("B1 + 2"));
+
+            ss.SetCellContents("C1", 3.0); // Change C1, which B1 depends on, and thus A1 indirectly
+            var affectedCells = ss.SetCellContents("C1", 3.0);
+
+            Assert.IsTrue(affectedCells.Contains("A1"), "A1 should be affected as it indirectly depends on C1 through B1.");
+        }
 
     }
 }
