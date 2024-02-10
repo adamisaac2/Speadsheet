@@ -222,50 +222,63 @@ namespace SS
 
         private bool CreatesCircularDependency(string name, Formula formula)
         {
-            // Temporarily update the dependency graph with the new formula
+            // Temporarily update the dependency graph to include the new formula's dependencies.
             var originalDependees = new HashSet<string>(dependencies.GetDependees(name));
-            dependencies.ReplaceDependees(name, new HashSet<string>(formula.GetVariables()));
-
-            bool hasCycle = HasCycle(name);
-
-            // Revert the dependency graph to its original state if a circular dependency is detected
-            if (hasCycle)
+            try
             {
+                // Replace the cell's dependees with the variables in the new formula.
+                dependencies.ReplaceDependees(name, formula.GetVariables());
+
+                // Attempt to recalculate cells based on this temporary dependency graph.
+                // Use an ISet to contain just the name of the cell being updated to simulate the change.
+                var namesToRecalculate = new HashSet<string> { name };
+                // The call below will throw a CircularException if a circular dependency is detected.
+                GetCellsToRecalculate(namesToRecalculate).ToList();
+
+                // If no exception is thrown, there are no circular dependencies with this change.
+                return false;
+            }
+            catch (CircularException)
+            {
+                // A CircularException indicates a circular dependency.
+                return true;
+            }
+            finally
+            {
+                // Restore the original dependencies to leave the graph unchanged.
                 dependencies.ReplaceDependees(name, originalDependees);
             }
-
-            return hasCycle;
         }
-        private bool HasCycle(string startCell)
-        {
-            var visited = new HashSet<string>();
-            var stack = new HashSet<string>();
+        //private bool HasCycle(string startCell)
+        //{
+        //    var visited = new HashSet<string>();
+        //    var stack = new HashSet<string>();
 
-            return CheckCycle(startCell, visited, stack);
-        }
-        private bool CheckCycle(string currentCell, HashSet<string> visited, HashSet<string> stack)
-        {
-            // If we haven't visited this cell yet
-            if (!visited.Contains(currentCell))
-            {
-                visited.Add(currentCell);
-                stack.Add(currentCell);
+        //    return CheckCycle(startCell, visited, stack);
+        //}
+        //private bool CheckCycle(string currentCell, HashSet<string> visited, HashSet<string> stack)
+        //{
+        //    // If we haven't visited this cell yet
+        //    if (!visited.Contains(currentCell))
+        //    {
+        //        visited.Add(currentCell);
+        //        stack.Add(currentCell);
 
-                foreach (var dependent in dependencies.GetDependents(currentCell))
-                {
-                    // If the next cell hasn't been visited and is part of a cycle, or
-                    // if it's already in the stack (meaning we've looped back), we have a cycle
-                    if (!visited.Contains(dependent) && CheckCycle(dependent, visited, stack) || stack.Contains(dependent))
-                    {
-                        return true;
-                    }
-                }
-            }
+        //        foreach (var dependent in dependencies.GetDependents(currentCell))
+        //        {
+        //            // If the next cell hasn't been visited and is part of a cycle, or
+        //            // if it's already in the stack (meaning we've looped back), we have a cycle
+        //            if (!visited.Contains(dependent) && CheckCycle(dependent, visited, stack) || stack.Contains(dependent))
+        //            {
+        //                return true;
+        //            }
+        //        }
+        //    }
 
             // Remove the cell from the stack before returning to previous call
-            stack.Remove(currentCell);
-            return false;
-        }
+        //    stack.Remove(currentCell);
+        //    return false;
+        //}
 
 
         // Helper method to validate cell names
