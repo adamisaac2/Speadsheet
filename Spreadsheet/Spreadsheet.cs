@@ -46,9 +46,8 @@ namespace SS
 
         public override ISet<string> SetCellContents(string name, Formula formula)
         {
-            Console.WriteLine($"Setting formula for cell {name} to '{formula}'"); // Debugging line
 
-
+            // Validate the input parameters
             if (formula == null)
                 throw new ArgumentNullException(nameof(formula));
 
@@ -58,24 +57,21 @@ namespace SS
             // Check for circular dependencies before adding the formula
             if (CreatesCircularDependency(name, formula))
             {
-                Console.WriteLine($"Circular dependency detected when setting formula for cell {name}."); // Debugging line
                 throw new CircularException();
             }
 
 
             // Set the cell's content to the formula
             cells[name] = new Cell(formula);
-            Console.WriteLine($"Updated cell {name} with {formula}."); // Debugging line
 
-            // Assuming a method to update or add to the dependency graph
+            // Update the dependency graph to reflect the new formula. This may involve adding new dependencies
             UpdateDependencies(name, formula);
-            Console.WriteLine($"Updated dependencies for cell {name} due to formula change."); // Debugging line
 
-
-
+            //Check for circular dependency, and if certain cells need to be recalculated
             GetCellsToRecalculate(name);
+
+            // After updating the cell's formula, determine which cells are affected by this change.
             ISet<string> affectedCells = GetAffectedCells(name);
-            Console.WriteLine($"Affected cells after formula update: {string.Join(", ", affectedCells)}"); // Debugging line
 
             // Calculate the set of cells affected by this change
             return affectedCells;
@@ -116,54 +112,41 @@ namespace SS
 
         public override ISet<string> SetCellContents(string name, double number)
         {
-
-            Console.WriteLine($"Debug: Setting cell {name} to number {number}.");
-
             //If the name is null or empty or invalid throw an exception.
             if (string.IsNullOrEmpty(name) || !IsValidName(name))
             {
-                Console.WriteLine("Debug: InvalidNameException thrown due to invalid or null name.");
-
                 throw new InvalidNameException();
             }
 
             // If the cell doesnt exist, create it
             if (!cells.ContainsKey(name))
             {
-                Console.WriteLine($"Debug: Cell {name} does not exist. Creating new cell.");
-
                 cells[name] = new Cell(number);
             }
             else
             {
-                Console.WriteLine($"Debug: Cell {name} exists. Updating content.");
-
                 // Update existing cells content
                 cells[name] = new Cell(number);
             }
 
             // Update dependencies and calculate affected cells
             var affectedCells = new HashSet<string>();
+            
             affectedCells.Add(name);
-            Console.WriteLine($"Debug: Added {name} to affected cells.");
+           
             AddDependentsRecursively(name, affectedCells);
           
-            Console.WriteLine($"Debug: Total affected cells: {affectedCells.Count}. Cells: {string.Join(", ", affectedCells)}");
-
             // Return the set of affected cells
             return affectedCells;
         }
 
         private void AddDependentsRecursively(string name, HashSet<string> affectedCells)
         {
-            Console.WriteLine($"Debug: Recursively adding dependents for {name}.");
 
             foreach (var dependent in dependencies.GetDependents(name))
             {
                 if (affectedCells.Add(dependent)) // Ensure the dependent hasn't already been processed
                 {
-                    Console.WriteLine($"Debug: {dependent} added to affected cells. Recursively processing its dependents.");
-
                     // Recursively add the dependents of the current dependent
                     AddDependentsRecursively(dependent, affectedCells);
                 }
@@ -172,7 +155,7 @@ namespace SS
 
         public override object GetCellContents(string name)
         {
-            // Validate the cell name
+            // Validate cell name
             if (string.IsNullOrEmpty(name) || !IsValidName(name))
             {
                 throw new InvalidNameException();
@@ -190,16 +173,13 @@ namespace SS
                 else
                 {
                     // Handle the case where the cell is null or casting fails, if necessary
-                    return ""; // This is just an example. Adjust based on your needs.
+                    return ""; 
                 }
             }
             else
             {
                 // If the cell doesn't exist, what should be returned?
-                // Depending on your specifications, this might return null, or throw an exception.
-                // For this example, let's assume we return an empty string to indicate no content.
-                // Adjust this behavior as needed.
-                return ""; // Or throw new ArgumentException($"Cell {name} does not exist.");
+                return ""; 
             }
            
         }
@@ -219,80 +199,82 @@ namespace SS
             }
         }
 
+       
         private bool IsEmptyCell(Cell cell)
         {
-            // You need to define what "empty" means for your cells.
-            // For example, if Content is a string, check if it's not null or empty.
-            // If Content is a double, check if it's not equal to 0, and so on.
+            // Return true if any of the following conditions are met, indicating the cell is "empty":
 
-            // Adjust these checks based on the actual content types and how you define "empty" for each.
+            // 1. The cell's content is null. This means the cell has not been set to any value.
             return cell.Content == null ||
+
+                   // 2. The cell's content is a string, and it is either null or an empty string ("").
+                   // This uses pattern matching to cast Content to a string only when it is a string,
+                   // then checks if the string is null or empty using the built-in IsNullOrEmpty method.
                    (cell.Content is string str && string.IsNullOrEmpty(str)) ||
+
+                   // 3. The cell's content is a double, and its value is 0.0.
+                   // Similar to the string check, this uses pattern matching to cast Content to a double
+                   // when it is a double, then checks if the value is 0.0.
                    (cell.Content is double num && num == 0.0);
-           
         }
 
-       
 
-       
         protected override IEnumerable<string> GetDirectDependents(string name)
         {
+            //If name is null, throw ArugmentNullException
             if (name == null)
             {
                 throw new ArgumentNullException(nameof(name));
             }
 
+            //If name is not valid according to bool method, throw InvalidNameException
             if (!IsValidName(name))
             {
                 throw new InvalidNameException();
             }
 
-            // The DependencyGraph class might provide a method like this:
+            //Return the dependents of name
             return dependencies.GetDependents(name);
         }
 
-
-        public ISet<string> GetAffectedCells(string name)
+    
+        private ISet<string> GetAffectedCells(string name)
         {
             HashSet<string> affectedCells = new HashSet<string>();
             Queue<string> cellsToCheck = new Queue<string>();
 
+            // Start the process with the initially changed cell by enqueuing its name
             cellsToCheck.Enqueue(name);
-            Console.WriteLine($"Starting with cell {name} to check for affected cells. INITIAL STATE OF GETAFFECTEDCELLS"); // Debugging line
 
+            // Continue processing as long as there are cells in the queue to check
             while (cellsToCheck.Count > 0)
             {
+                // Dequeue the next cell to process
                 string currentCell = cellsToCheck.Dequeue();
-                Console.WriteLine($"Processing cell {currentCell}."); // Debugging line
 
-
+                // Add the current cell to the set of affected cells
                 affectedCells.Add(currentCell);
 
+                // For each cell that directly depends on the current cell
                 foreach (string dependent in GetDirectDependents(currentCell))
                 {
+                    // Check if this dependent cell has not already been processed
                     if (!affectedCells.Contains(dependent))
                     {
-                        Console.WriteLine($"Adding dependent {dependent} of {currentCell} to check queue."); // Debugging line
-
+                        // If not processed, enqueue the dependent cell for further checks
                         cellsToCheck.Enqueue(dependent);
                     }
                 }
             }
-            Console.WriteLine($"Final list of affected cells: {string.Join(", ", affectedCells)}"); // Debugging line
-
+            // Return the complete set of cells that are affected directly or indirectly.
             return affectedCells;
         }
 
         private void UpdateDependencies(string name, Formula formula)
         {
             // First, remove all existing dependencies for this cell
-            Console.WriteLine($"Current dependents of {name}: {string.Join(", ", dependencies.GetDependents(name))}");
-
-
             dependencies.ReplaceDependees(name, new HashSet<string>());
           
-            Console.WriteLine($"Updated dependents of {name}: {string.Join(", ", dependencies.GetDependents(name))}");
-
             // Now, add new dependencies based on the variables in the formula
             foreach (var variable in formula.GetVariables())
             {
@@ -302,64 +284,34 @@ namespace SS
 
         private bool CreatesCircularDependency(string name, Formula formula)
         {
-            // Temporarily update the dependency graph to include the new formula's dependencies.
+            // Temporarily update the dependency graph to include the new formula's dependencies
             var originalDependees = new HashSet<string>(dependencies.GetDependees(name));
             try
             {
-                // Replace the cell's dependees with the variables in the new formula.
+                // Replace the cell's dependees with the variables in the new formula
                 dependencies.ReplaceDependees(name, formula.GetVariables());
 
-                // Attempt to recalculate cells based on this temporary dependency graph.
-                // Use an ISet to contain just the name of the cell being updated to simulate the change.
+                // Attempt to recalculate cells based on this temporary dependency graph
+                // Use an ISet to contain just the name of the cell being updated to simulate the change
                 var namesToRecalculate = new HashSet<string> { name };
-                // The call below will throw a CircularException if a circular dependency is detected.
+              
+                // The call below will throw a CircularException if a circular dependency is detected
                 GetCellsToRecalculate(namesToRecalculate).ToList();
 
-                // If no exception is thrown, there are no circular dependencies with this change.
+                // If no exception is thrown, there are no circular dependencies with this change
                 return false;
             }
             catch (CircularException)
             {
-                // A CircularException indicates a circular dependency.
+                // A CircularException indicates a circular dependency
                 return true;
             }
             finally
             {
-                // Restore the original dependencies to leave the graph unchanged.
+                // Restore the original dependencies to leave the graph unchanged
                 dependencies.ReplaceDependees(name, originalDependees);
             }
         }
-        //private bool HasCycle(string startCell)
-        //{
-        //    var visited = new HashSet<string>();
-        //    var stack = new HashSet<string>();
-
-        //    return CheckCycle(startCell, visited, stack);
-        //}
-        //private bool CheckCycle(string currentCell, HashSet<string> visited, HashSet<string> stack)
-        //{
-        //    // If we haven't visited this cell yet
-        //    if (!visited.Contains(currentCell))
-        //    {
-        //        visited.Add(currentCell);
-        //        stack.Add(currentCell);
-
-        //        foreach (var dependent in dependencies.GetDependents(currentCell))
-        //        {
-        //            // If the next cell hasn't been visited and is part of a cycle, or
-        //            // if it's already in the stack (meaning we've looped back), we have a cycle
-        //            if (!visited.Contains(dependent) && CheckCycle(dependent, visited, stack) || stack.Contains(dependent))
-        //            {
-        //                return true;
-        //            }
-        //        }
-        //    }
-
-            // Remove the cell from the stack before returning to previous call
-        //    stack.Remove(currentCell);
-        //    return false;
-        //}
-
 
         // Helper method to validate cell names
         private bool IsValidName(string name)
@@ -395,6 +347,7 @@ namespace SS
             }
         }
 
+        //Made this specifically for getting close to 100 percent coverage.It allowed me to test the otherwise protected method of GetDirectDependents
         public class TestableSpreadsheet : Spreadsheet
         {
             public IEnumerable<string> TestGetDirectDependents(string name)

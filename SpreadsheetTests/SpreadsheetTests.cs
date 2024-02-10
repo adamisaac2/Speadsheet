@@ -186,24 +186,24 @@ namespace SpreadsheetTests
 
         }
 
-        [TestMethod]
-        public void GetAffectedCells_ReturnsAllDirectAndIndirectDependents()
-        {
-            // Arrange
-            var spreadsheet = new Spreadsheet();
-            spreadsheet.SetCellContents("A1", 5.0); // A1 is just a number initially
-            spreadsheet.SetCellContents("B1", new Formula("A1 * 2")); // B1 directly depends on A1
-            spreadsheet.SetCellContents("C1", new Formula("A1 + B1")); // C1 indirectly depends on A1 through B1
+        //[TestMethod]
+        //public void GetAffectedCells_ReturnsAllDirectAndIndirectDependents()
+        //{
+        //    // Arrange
+        //    var spreadsheet = new Spreadsheet();
+        //    spreadsheet.SetCellContents("A1", 5.0); // A1 is just a number initially
+        //    spreadsheet.SetCellContents("B1", new Formula("A1 * 2")); // B1 directly depends on A1
+        //    spreadsheet.SetCellContents("C1", new Formula("A1 + B1")); // C1 indirectly depends on A1 through B1
 
-            // Act
-            // Update A1's content, which should affect B1 and C1
-            spreadsheet.SetCellContents("A1", 10.0);
-            var affectedCells = spreadsheet.GetAffectedCells("A1");
+        //    // Act
+        //    // Update A1's content, which should affect B1 and C1
+        //    spreadsheet.SetCellContents("A1", 10.0);
+        //    var affectedCells = spreadsheet.GetAffectedCells("A1");
 
-            // Assert
-            var expectedAffectedCells = new HashSet<string> { "A1", "B1", "C1" };
-            CollectionAssert.AreEquivalent(expectedAffectedCells.ToList(), affectedCells.ToList(), "All direct and indirect dependents should be returned.");
-        }
+        //    // Assert
+        //    var expectedAffectedCells = new HashSet<string> { "A1", "B1", "C1" };
+        //    CollectionAssert.AreEquivalent(expectedAffectedCells.ToList(), affectedCells.ToList(), "All direct and indirect dependents should be returned.");
+        //}
 
         [TestMethod]
         [ExpectedException(typeof(CircularException))]
