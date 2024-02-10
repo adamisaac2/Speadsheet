@@ -71,6 +71,7 @@ namespace SS
             Console.WriteLine($"Updated dependencies for cell {name} due to formula change."); // Debugging line
 
 
+
             GetCellsToRecalculate(name);
             ISet<string> affectedCells = GetAffectedCells(name);
             Console.WriteLine($"Affected cells after formula update: {string.Join(", ", affectedCells)}"); // Debugging line
@@ -144,15 +145,8 @@ namespace SS
             var affectedCells = new HashSet<string>();
             affectedCells.Add(name);
             Console.WriteLine($"Debug: Added {name} to affected cells.");
-
-            foreach (var dependent in dependencies.GetDependents(name))
-            {
-                Console.WriteLine($"Debug: Processing direct dependent {dependent} of {name}.");
-
-                AddDependentsRecursively(name, affectedCells);
-                // Recursively add indirect dependents if necessary
-            }
-
+            AddDependentsRecursively(name, affectedCells);
+          
             Console.WriteLine($"Debug: Total affected cells: {affectedCells.Count}. Cells: {string.Join(", ", affectedCells)}");
 
             // Return the set of affected cells
@@ -290,7 +284,7 @@ namespace SS
             // Now, add new dependencies based on the variables in the formula
             foreach (var variable in formula.GetVariables())
             {
-                dependencies.AddDependency(name, variable);
+                dependencies.AddDependency(variable, name);
             }
         }
 
