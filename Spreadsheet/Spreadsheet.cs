@@ -5,6 +5,27 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using SpreadsheetUtilities;
+using static System.Net.Mime.MediaTypeNames;
+
+/// <summary>
+/// Author:   Adam Isaac
+/// Partner:   None
+/// Date:      Feb 9, 2024
+/// Course:    CS 3500, University of Utah, School of Computing
+/// Copyright: CS 3500 and [Adam Isaac - This work may not
+///            be copied for use in Academic Coursework.
+///
+/// I, ADAM ISAAC, certify that I wrote this code from scratch and
+/// did not copy it in part or whole from another source.  All
+/// references used in the completion of the assignments are cited
+/// in my README file.
+///
+/// File Contents
+/// This file is used for the application of the spreadsheet that we are currently making. Right now it is used to evaluate
+/// the cells and the formulas inside of them. Cells can be dependent on each other and take values from other cells that are 
+/// necessary for computing the value of their own cell. 
+///    
+/// </summary>
 
 namespace SS
 {
@@ -24,6 +45,9 @@ namespace SS
 
         public override ISet<string> SetCellContents(string name, Formula formula)
         {
+            Console.WriteLine($"Setting formula for cell {name} to '{formula}'"); // Debugging line
+
+
             if (formula == null)
                 throw new ArgumentNullException(nameof(formula));
 
@@ -32,18 +56,25 @@ namespace SS
 
             // Check for circular dependencies before adding the formula
             if (CreatesCircularDependency(name, formula))
+            {
+                Console.WriteLine($"Circular dependency detected when setting formula for cell {name}."); // Debugging line
                 throw new CircularException();
-
+            }
 
 
             // Set the cell's content to the formula
             cells[name] = new Cell(formula);
+            Console.WriteLine($"Updated cell {name} with formula."); // Debugging line
 
             // Assuming a method to update or add to the dependency graph
             UpdateDependencies(name, formula);
+            Console.WriteLine($"Updated dependencies for cell {name} due to formula change."); // Debugging line
+
 
             GetCellsToRecalculate(name);
             ISet<string> affectedCells = GetAffectedCells(name);
+            Console.WriteLine($"Affected cells after formula update: {string.Join(", ", affectedCells)}"); // Debugging line
+
             // Calculate the set of cells affected by this change
             return affectedCells;
         }
@@ -190,20 +221,27 @@ namespace SS
             HashSet<string> affectedCells = new HashSet<string>();
             Queue<string> cellsToCheck = new Queue<string>();
             cellsToCheck.Enqueue(name);
+            Console.WriteLine($"Starting with cell {name} to check for affected cells."); // Debugging line
 
             while (cellsToCheck.Count > 0)
             {
                 string currentCell = cellsToCheck.Dequeue();
+                Console.WriteLine($"Processing cell {currentCell}."); // Debugging line
+
+
                 affectedCells.Add(currentCell);
 
                 foreach (string dependent in GetDirectDependents(currentCell))
                 {
                     if (!affectedCells.Contains(dependent))
                     {
+                        Console.WriteLine($"Adding dependent {dependent} of {currentCell} to check queue."); // Debugging line
+
                         cellsToCheck.Enqueue(dependent);
                     }
                 }
             }
+            Console.WriteLine($"Final list of affected cells: {string.Join(", ", affectedCells)}"); // Debugging line
 
             return affectedCells;
         }
@@ -211,7 +249,12 @@ namespace SS
         private void UpdateDependencies(string name, Formula formula)
         {
             // First, remove all existing dependencies for this cell
+            Console.WriteLine($"Current dependents of {name}: {string.Join(", ", dependencies.GetDependents(name))}");
+
+
             dependencies.ReplaceDependees(name, new HashSet<string>());
+          
+            Console.WriteLine($"Updated dependents of {name}: {string.Join(", ", dependencies.GetDependents(name))}");
 
             // Now, add new dependencies based on the variables in the formula
             foreach (var variable in formula.GetVariables())
