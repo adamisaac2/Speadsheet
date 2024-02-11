@@ -3,7 +3,7 @@ Partner:    None
 Start Date: 1-12-2024
 Course:     CS 3500, University of Utah, School of Computing
 GitHub ID:  adamisaac2
-Repo:       https://github.com/Utah-School-of-Computing-de-St-Germain
+Repo:       https://github.com/adamisaac2/Speadsheet
 Commit Date: 1-18-2024
 Solution:   Spreadsheet
 Copyright:  CS 3500 and [Adam Isaac] - This work may not be copied for use in Academic Coursework.

@@ -2,15 +2,16 @@
 Partner:    None
 Course:     CS 3500, University of Utah, School of Computing
 GitHub ID:  adamisaac2
-Repo:       
+Repo:       https://github.com/adamisaac2/Speadsheet
 Date:       2.10.2024 
 Project:    Spreadsheet
 Copyright:  CS 3500 and [Adam Isaac - This work may not be copied for use in Academic Coursework.
 
 # Comments to Evaluators
-Tester class was light work, didnt really take alot of time at all, just wrote alot of tests because I wanted to get as much code coverage
-as possible. All tests passed off rip, or took a small amount of time to fix and get to pass. In total I made something like 30 tests but 
-some of them were repetitive so I just deleted them. 
+Spreadsheet was an assignment that I think went well for me. I spent a pretty good amount of time throughout 2 days and I think that I 
+am ready to submit it. I didnt really have too many problems, only just one significant one that caused the majority of the pain for this 
+assignment, and it was only because of one line of code. The problem caused more time then I anticipated because I had thought that the problem
+was inside of a different method then it was. Anyways, I think this assignment should be complete. 
 
 # References
-The only references I used were the lecture notes. 
+The only references I used were the lecture notes and piazza. 
