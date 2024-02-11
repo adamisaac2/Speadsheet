@@ -17,7 +17,9 @@ of features. It is especially buggy when it contains complex expressions using p
 variables and parenthesis are used in the same expression.Future extensions are bug fixing and 
 getting variables to correctly work with parenthesis. -- Update A3 -- While the spreadsheet functionality still is not available, I have
 updated the mathematical side of it, so that the spreadsheet(when implemented) can actually evaluate full functions using PEMDAS without
-completely being wrong. It can now evaluate expressions correctly. 
+completely being wrong. It can now evaluate expressions correctly. --Update A4 -- Spreadsheet can now use cell functionality and can use
+information from other cells in the spreadsheet. While the GUI is not set up yet, everything seems to be getting better and better in terms
+of functionality. 
 
 # Time Expenditures:
 
@@ -30,6 +32,8 @@ completely being wrong. It can now evaluate expressions correctly.
     1. Formula: Predicted Hours: 10 Actual hours: ~15
     2. FormulaTests: Predicted Hours: 3 Actual Hours: 3
 
+    1. Spreadsheet: Predicted Hours: 10 Actual Hours : 10
+    2. SpreadsheetTests: Predicted Hours: 3 Actual Hours: 3
 
     Time Breakdown Assignment 1 - 
     My first day working on this, I spent about 4 or 5 hours just writing all the base code without debugging
@@ -52,3 +56,10 @@ completely being wrong. It can now evaluate expressions correctly.
     implemented the formula method, I had messed up on the way the strings were added to the tokens list and I couldnt figure out what
     was going wrong for the longest time, and come to find out it was literally only like 2 lines of code I was missing that was messing
     everything else up lol. After I fixed that it was pretty much good except for writing the tests took alot of time as well. 
+
+    Time Breakdown Assignment 4 -
+    I feel like I had a fairly straight forward time with this assignment. My implementations of methods went smoothly and I didnt really 
+    have that many bug encounters or code that wasnt really working, except for one instance where I had misplaced the position of variables 
+    in my SetCellContents for the string and double. Which caused a bug that took me a while to figure out because I had thought it was in 
+    a different method. Besides that I would say that everything went well. My coverage is as 97 percent and I had made more then a few tests 
+    that cover edge cases, so I think I will be good for grading on this assingmnet. 
