@@ -379,7 +379,42 @@ namespace SS
 
         public override string GetXML()
         {
-            throw new NotImplementedException();
+            StringBuilder xml = new StringBuilder();
+            xml.Append("<spreadsheet>");
+
+            foreach(KeyValuePair<string, object> cellPair in cells)
+            {
+                Cell cell = cellPair.Value as Cell;
+                if (cell != null && cell.Content != null)
+                {
+                    string cellName = cellPair.Key;
+                    string cellContent = "";
+                    string contentType = "";
+                  if (cell.Content is double)
+                  {
+                        cellContent = cell.Content.ToString();
+                        contentType = "String";
+                  }
+                  else if(cell.Content is string)
+                  {
+                        cellContent = cell.Content as string;
+                        contentType = "String";
+
+                  }
+                  else if(cell.Content is Formula)
+                  {
+                        cellContent = "=" + ((Formula)cell.Content).ToString();
+                        contentType = "Formula";
+                  }
+
+                    cellContent = System.Security.SecurityElement.Escape(cellContent);
+
+                    xml.AppendFormat("<cell><name>{0}</name><content>{1}</content><type>{2}</type></cell>", cellName, cellContent, contentType);
+                }
+            }
+            xml.Append("</spreadsheet>");
+            return xml.ToString();
+       
         }
 
         public override object GetCellValue(string name)
