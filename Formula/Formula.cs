@@ -501,20 +501,20 @@ namespace SpreadsheetUtilities
     /// Reports whether f1 == f2, using the notion of equality from the Equals method.
     /// 
     /// </summary>
-    public static bool operator ==(Formula f1, Formula f2)
-    {
-      return f1.Equals(f2);
-    }
+    //public static bool operator ==(Formula f1, Formula f2)
+    //{
+    //  return f1.Equals(f2);
+    //}
 
     /// <summary>
     ///   <change> We are now using Non-Nullable objects.  Thus neither f1 nor f2 can be null!</change>
     ///   <change> Note: != should almost always be not ==, if you get my meaning </change>
     ///   Reports whether f1 != f2, using the notion of equality from the Equals method.
     /// </summary>
-    public static bool operator !=(Formula f1, Formula f2)
-    {
-            return !(f1 == f2);
-    }
+    //public static bool operator !=(Formula f1, Formula f2)
+    //{
+    //        return !(f1 == f2);
+    //}
 
     /// <summary>
     /// Returns a hash code for this Formula.  If f1.Equals(f2), then it must be the

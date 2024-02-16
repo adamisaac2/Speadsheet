@@ -286,13 +286,16 @@ namespace SS
         {
             LinkedList<String> changed = new LinkedList<String>();
             HashSet<String>    visited = new HashSet<String>();
+           //For each loop that goes through the parameter set names
             foreach (String name in names)
             {
+               //If the set does not contain a name, call the visit method with the 4 parameters.
                 if (!visited.Contains(name))
                 {
                     Visit(name, name, visited, changed);
                 }
             }
+           //Return the changed cell
             return changed;
         }
 
@@ -316,24 +319,37 @@ namespace SS
 
 
         /// <summary>
-        /// A helper for the GetCellsToRecalculate method.
-        /// 
-        ///   -- You should fully comment what is going on below using XML tags as appropriate --
+        /// Performs a depth-first search (DFS) on the dependency graph starting from a specified cell.
+        /// It is used to determine the order in which cells need to be recalculated due to a change in the starting cell,
+        /// while also detecting any circular dependencies.
         /// </summary>
+        /// <param name="start">The cell from which the recalculation process began. Used to detect circular dependencies.</param>
+        /// <param name="name">The current cell being visited in the DFS.</param>
+        /// <param name="visited">A set of cells that have already been visited during the DFS. Helps avoid revisiting cells, thereby preventing infinite loops.</param>
+        /// <param name="changed">A list that records the cells in the order they need to be recalculated. Cells are added to the front of the list to ensure they are recalculated in the correct order.</param>
+        /// <exception cref="CircularException">Thrown if a circular dependency is detected, indicated by encountering the start cell again during the DFS.</exception>
         private void Visit(String start, String name, ISet<String> visited, LinkedList<String> changed)
         {
+            // Mark the current cell as visited
             visited.Add(name);
+
+            // Iterate over all direct dependents of the current cell
             foreach (String n in GetDirectDependents(name))
             {
+                // If a direct dependent is the start cell, we've encountered a circular dependency
                 if (n.Equals(start))
                 {
                     throw new CircularException();
                 }
+                // If this dependent hasn't been visited, recursively visit it
                 else if (!visited.Contains(n))
                 {
                     Visit(start, n, visited, changed);
                 }
             }
+
+            // Once all dependents of the current cell have been processed, add the current cell to the front of the changed list.
+            // This ensures that cells are recalculated in reverse order of their visitation, adhering to their dependency order.
             changed.AddFirst(name);
         }
 
