@@ -22,6 +22,25 @@ namespace SS
     {
     }
 
+    /// <summary>
+    ///   <para>
+    ///     Thrown to indicate that a read or write attempt has failed.
+    ///   </para>
+    /// </summary>
+    public class SpreadsheetReadWriteException : Exception
+    {
+        /// <summary>
+        ///   <para>
+        ///     Creates the exception with a message defining what went wrong
+        ///   </para>
+        /// </summary>
+        public SpreadsheetReadWriteException(string msg)
+            : base(msg)
+        {
+        }
+    }
+
+
 
     /// <summary>
     /// <para>
@@ -139,7 +158,7 @@ namespace SS
         ///      set {A1, B1, C1} is returned.
         ///   </para>
         /// </returns>
-        public abstract ISet<String> SetCellContents(String name, double number);
+        protected abstract IList<String> SetCellContents(String name, double number);
 
         /// <summary>
         /// The contents of the named cell becomes the text.  
@@ -200,7 +219,7 @@ namespace SS
         ///   </para>
         /// 
         /// </returns>
-        public abstract ISet<String> SetCellContents(String name, Formula formula);
+        protected abstract IList<String> SetCellContents(String name, Formula formula);
 
 
         /// <summary>
@@ -352,6 +371,186 @@ namespace SS
             // This ensures that cells are recalculated in reverse order of their visitation, adhering to their dependency order.
             changed.AddFirst(name);
         }
+
+        /// <summary>
+        ///   <para>Sets the contents of the named cell to the appropriate value. </para>
+        ///   <para>
+        ///       First, if the content parses as a double, the contents of the named
+        ///       cell becomes that double.
+        ///   </para>
+        ///
+        ///   <para>
+        ///       Otherwise, if content begins with the character '=', an attempt is made
+        ///       to parse the remainder of content into a Formula.  
+        ///       There are then three possible outcomes:
+        ///   </para>
+        ///
+        ///   <list type="number">
+        ///       <item>
+        ///           If the remainder of content cannot be parsed into a Formula, a 
+        ///           SpreadsheetUtilities.FormulaFormatException is thrown.
+        ///       </item>
+        /// 
+        ///       <item>
+        ///           If changing the contents of the named cell to be f
+        ///           would cause a circular dependency, a CircularException is thrown,
+        ///           and no change is made to the spreadsheet.
+        ///       </item>
+        ///
+        ///       <item>
+        ///           Otherwise, the contents of the named cell becomes f.
+        ///       </item>
+        ///   </list>
+        ///
+        ///   <para>
+        ///       Finally, if the content is a string that is not a double and does not
+        ///       begin with an "=" (equal sign), save the content as a string.
+        ///   </para>
+        /// </summary>
+        ///
+        /// <exception cref="InvalidNameException"> 
+        ///   If the name parameter is invalid, throw an InvalidNameException
+        /// </exception>
+        /// 
+        /// <exception cref="SpreadsheetUtilities.FormulaFormatException"> 
+        ///   If the content is "=XYZ" where XYZ is an invalid formula, throw a FormulaFormatException.
+        /// </exception>
+        /// 
+        /// <exception cref="CircularException"> 
+        ///   If changing the contents of the named cell to be the formula would 
+        ///   cause a circular dependency, throw a CircularException.  
+        ///   (NOTE: No change is made to the spreadsheet.)
+        /// </exception>
+        /// 
+        /// <param name="name"> The cell name that is being changed</param>
+        /// <param name="content"> The new content of the cell</param>
+        /// 
+        /// <returns>
+        ///       <para>
+        ///           This method returns a list consisting of the passed in cell name,
+        ///           followed by the names of all other cells whose value depends, directly
+        ///           or indirectly, on the named cell. The order of the list MUST BE any
+        ///           order such that if cells are re-evaluated in that order, their dependencies 
+        ///           are satisfied by the time they are evaluated.
+        ///       </para>
+        ///
+        ///       <para>
+        ///           For example, if name is A1, B1 contains A1*2, and C1 contains B1+A1, the
+        ///           list {A1, B1, C1} is returned.  If the cells are then evaluate din the order:
+        ///           A1, then B1, then C1, the integrity of the Spreadsheet is maintained.
+        ///       </para>
+        /// </returns>
+        public abstract IList<String> SetContentsOfCell(String name, String content);
+
+        /// <summary>
+        /// True if this spreadsheet has been modified since it was created or saved                  
+        /// (whichever happened most recently); false otherwise.
+        /// </summary>
+        public abstract bool Changed { get; protected set; }
+
+        /// <summary>
+        /// Method used to determine whether a string that consists of one or more letters
+        /// followed by one or more digits is a valid variable name.
+        /// </summary>
+        public Func<string, bool> IsValid { get; protected set; }
+
+        /// <summary>
+        /// Method used to convert a cell name to its standard form.  For example,
+        /// Normalize might convert names to upper case.
+        /// </summary>
+        public Func<string, string> Normalize { get; protected set; }
+
+        /// <summary>
+        /// Version information
+        /// </summary>
+        public string Version { get; protected set; }
+
+        /// <summary>
+        /// Constructs an abstract spreadsheet by recording its variable validity test,
+        /// its normalization method, and its version information.  
+        /// </summary>
+        /// 
+        /// <remarks>
+        ///   The variable validity test is used throughout to determine whether a string that consists of 
+        ///   one or more letters followed by one or more digits is a valid cell name.  The variable
+        ///   equality test should be used throughout to determine whether two variables are equal.
+        /// </remarks>
+        /// 
+        /// <param name="isValid">   defines what valid variables look like for the application</param>
+        /// <param name="normalize"> defines a normalization procedure to be applied to all valid variable strings</param>
+        /// <param name="version">   defines the version of the spreadsheet (should it be saved)</param>
+        public AbstractSpreadsheet(Func<string, bool> isValid, Func<string, string> normalize, string version)
+        {
+            this.IsValid = isValid;
+            this.Normalize = normalize;
+            this.Version = version;
+        }
+
+        /// <summary>
+        ///   Look up the version information in the given file. If there are any problems opening, reading, 
+        ///   or closing the file, the method should throw a SpreadsheetReadWriteException with an explanatory message.
+        /// </summary>
+        /// 
+        /// <remarks>
+        ///   In an ideal world, this method would be marked static as it does not rely on an existing SpreadSheet
+        ///   object to work; indeed it should simply open a file, lookup the version, and return it.  Because
+        ///   C# does not support this syntax, we abused the system and simply create a "regular" method to
+        ///   be implemented by the base class.
+        /// </remarks>
+        /// 
+        /// <exception cref="SpreadsheetReadWriteException"> 
+        ///   1Thrown if any problem occurs while reading the file or looking up the version information.
+        /// </exception>
+        /// 
+        /// <param name="filename"> The name of the file (including path, if necessary)</param>
+        /// <returns>Returns the version information of the spreadsheet saved in the named file.</returns>
+        public abstract string GetSavedVersion(String filename);
+
+        /// <summary>
+        /// Writes the contents of this spreadsheet to the named file using an XML format.
+        /// The XML elements should be structured as follows:
+        /// 
+        /// <spreadsheet version="version information goes here">
+        /// 
+        /// <cell>
+        /// <name>cell name goes here</name>
+        /// <contents>cell contents goes here</contents>    
+        /// </cell>
+        /// 
+        /// </spreadsheet>
+        /// 
+        /// There should be one cell element for each non-empty cell in the spreadsheet.  
+        /// If the cell contains a string, it should be written as the contents.  
+        /// If the cell contains a double d, d.ToString() should be written as the contents.  
+        /// If the cell contains a Formula f, f.ToString() with "=" prepended should be written as the contents.
+        /// 
+        /// If there are any problems opening, writing, or closing the file, the method should throw a
+        /// SpreadsheetReadWriteException with an explanatory message.
+        /// </summary>
+        public abstract void Save(String filename);
+
+        /// <summary>
+        ///   Return an XML representation of the spreadsheet's contents
+        /// </summary>
+        /// <returns> contents in XML form </returns>
+        public abstract string GetXML();
+
+        /// <summary>
+        /// If name is invalid, throws an InvalidNameException.
+        /// </summary>
+        ///
+        /// <exception cref="InvalidNameException"> 
+        ///   If the name is invalid, throw an InvalidNameException
+        /// </exception>
+        /// 
+        /// <param name="name"> The name of the cell that we want the value of (will be normalized)</param>
+        /// 
+        /// <returns>
+        ///   Returns the value (as opposed to the contents) of the named cell.  The return
+        ///   value should be either a string, a double, or a SpreadsheetUtilities.FormulaError.
+        /// </returns>
+        public abstract object GetCellValue(String name);
+
 
     }
 }
