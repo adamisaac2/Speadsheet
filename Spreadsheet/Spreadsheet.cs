@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.Design;
+using System.Data;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -38,6 +39,8 @@ namespace SS
 
         // A DependencyGraph to track dependencies between cells
         private DependencyGraph dependencies = new DependencyGraph();
+
+        public override bool Changed { get => throw new NotImplementedException(); protected set => throw new NotImplementedException(); }
 
         //Zero argument constructor
         public Spreadsheet()
@@ -324,6 +327,105 @@ namespace SS
 
             string pattern = @"^[_a-zA-Z][_a-zA-Z0-9]*$";
             return Regex.IsMatch(name, pattern);
+        }
+
+        public override IList<string> SetContentsOfCell(string name, string content)
+        {
+            if (!IsValidName(name))
+            {
+                throw new InvalidNameException();
+            }
+            double number;
+           
+            if(double.TryParse(content, out number))
+            {
+                var affectedCells = SetCellContents(name, number);
+                return affectedCells.ToList();
+
+            }
+           
+            else if (content.StartsWith("="))
+            {
+                string formulaString = content.Substring(1);
+                try
+                {
+                    Formula formula = new Formula(formulaString);
+                    var affectedCells = SetCellContents(name, formula);
+                    return affectedCells.ToList();
+                }
+                catch
+                {
+                    throw;
+                }
+
+            }
+           
+            else
+            {
+                var affectedCells = SetCellContents(name, content);
+                return affectedCells.ToList();
+            }
+        }
+
+        public override string GetSavedVersion(string filename)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override void Save(string filename)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override string GetXML()
+        {
+            throw new NotImplementedException();
+        }
+
+        public override object GetCellValue(string name)
+        {
+            if (!IsValidName(name))
+            {
+                throw new InvalidNameException();
+            }
+
+            if (!cells.ContainsKey(name))
+            {
+                return "";
+            }
+            Cell cell = cells[name] as Cell;
+            
+            if(cell == null)
+            {
+                return "";
+            }
+            if(cell.Content is double)
+            {
+                return (double)cell.Content;
+            }
+            else if (cell.Content is string)
+            {
+                return cell.Content as string;
+            }
+            else if(cell.Content is Formula)
+            {
+                Formula formula = (Formula)cell.Content;
+                try
+                {
+                    return Evaluate(formula);
+                }
+                catch(Exception ex) 
+                {
+                    return new SpreadsheetUtilities.FormulaError(ex.Message);
+                }
+           
+            }
+            else
+            {
+                return "";
+            }
+
+
         }
 
         //Inner class to represent cells and their content
