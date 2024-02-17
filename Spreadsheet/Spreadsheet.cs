@@ -578,7 +578,7 @@ namespace SS
             }
             catch (Exception ex)
             {
-                // If there's an exception (e.g., undefined cell reference, division by zero),
+                // If there's an exception (e.g., undefined cell reference, division by zero)
                 // return a FormulaError with the exception message.
                 return new SpreadsheetUtilities.FormulaError(ex.Message);
             }
