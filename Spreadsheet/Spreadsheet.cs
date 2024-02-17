@@ -69,7 +69,7 @@ namespace SS
 
             // Validate the input parameters
             if (formula == null)
-                throw new ArgumentNullException(nameof(formula));
+                throw new ArgumentNullException(nameof(formula), "Formula cannot be null");
 
             if (string.IsNullOrEmpty(name) || !IsValidName(name))
                 throw new InvalidNameException();
@@ -342,44 +342,7 @@ namespace SS
             return Regex.IsMatch(name, pattern);
         }
 
-        public override IList<string> SetContentsOfCell(string name, string content)
-        {
-            if (!IsValidName(name))
-            {
-                throw new InvalidNameException();
-            }
-            double number;
-           
-            if(double.TryParse(content, out number))
-            {
-                var affectedCells = SetCellContents(name, number);
-                return affectedCells.ToList();
-
-            }
-           
-            else if (content.StartsWith("="))
-            {
-                string formulaString = content.Substring(1);
-                try
-                {
-                    Formula formula = new Formula(formulaString);
-                    var affectedCells = SetCellContents(name, formula);
-                    return affectedCells.ToList();
-                }
-                catch
-                {
-                    throw;
-                }
-
-            }
-           
-            else
-            {
-                var affectedCells = SetCellContents(name, content);
-                return affectedCells.ToList();
-            }
-        }
-
+       
         public override string GetSavedVersion(string filename)
         {
             try
@@ -550,7 +513,7 @@ namespace SS
 
         private object Evaluate(Formula formula)
         {
-            // This is a conceptual implementation. You need to adapt it to your project's specifics.
+            
             try
             {
                 // Evaluate the formula by converting it to a Func<string, double> delegate that
