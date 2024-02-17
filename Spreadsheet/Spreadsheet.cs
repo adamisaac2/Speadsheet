@@ -60,7 +60,8 @@ namespace SS
         {
             // Note: Actual loading from the file will be implemented later.
             // For now, perhaps just store the path or prepare the object without reading the file
-            this.PathToFile = pathToFile;
+            
+            //this.PathToFile = pathToFile;
         }
 
         protected override IList<string> SetCellContents(string name, Formula formula)
@@ -545,6 +546,42 @@ namespace SS
             }
 
 
+        }
+
+        private object Evaluate(Formula formula)
+        {
+            // This is a conceptual implementation. You need to adapt it to your project's specifics.
+            try
+            {
+                // Evaluate the formula by converting it to a Func<string, double> delegate that
+                // can resolve variable values. For example, if a formula contains a reference to
+                // cell "A1", this delegate should return the value of "A1".
+                Func<string, double> variableEvaluator = variable =>
+                {
+                    if (cells.ContainsKey(variable))
+                    {
+                        object content = GetCellValue(variable);
+                        if (content is double)
+                        {
+                            return (double)content;
+                        }
+                        else if (content is SpreadsheetUtilities.FormulaError)
+                        {
+                            throw new ArgumentException("Reference to cell with error.");
+                        }
+                    }
+                    throw new ArgumentException("Reference to an undefined cell.");
+                };
+
+                // Use the Evaluate method of the Formula class, passing the variableEvaluator.
+                return formula.Evaluate(variableEvaluator);
+            }
+            catch (Exception ex)
+            {
+                // If there's an exception (e.g., undefined cell reference, division by zero),
+                // return a FormulaError with the exception message.
+                return new SpreadsheetUtilities.FormulaError(ex.Message);
+            }
         }
 
         //Inner class to represent cells and their content
