@@ -38,6 +38,10 @@ namespace SpreadsheetTests
         {
             // Ensure the test directory exists
             Directory.CreateDirectory(_testDirectory);
+
+            File.WriteAllText(Path.Combine(_testDirectory, "validSpreadsheet.xml"), "<spreadsheet version=\"1.0\"></spreadsheet>");
+            // Create an invalid XML file (missing version attribute)
+            File.WriteAllText(Path.Combine(_testDirectory, "invalidSpreadsheet.xml"), "<spreadsheet></spreadsheet>");
         }
 
         [TestCleanup]
@@ -58,9 +62,34 @@ namespace SpreadsheetTests
 
 
 
+        [TestMethod]
+        [ExpectedException(typeof(SpreadsheetReadWriteException))]
+        public void GetSavedVersion_InvalidFile_ThrowsException()
+        {
+            var ss = new Spreadsheet();
+            string filename = Path.Combine(_testDirectory, "invalidSpreadsheet.xml");
+            ss.GetSavedVersion(filename);
+            // Expecting an exception due to missing version information
+        }
 
+        [TestMethod]
+        [ExpectedException(typeof(SpreadsheetReadWriteException))]
+        public void GetSavedVersion_NonexistentFile_ThrowsException()
+        {
+            var ss = new Spreadsheet();
+            string filename = Path.Combine(_testDirectory, "nonexistent.xml");
+            ss.GetSavedVersion(filename);
+            // Expecting an exception due to the file not existing
+        }
 
-
+        [TestMethod]
+        public void GetSavedVersion_ValidFile_ReturnsCorrectVersion()
+        {
+            var ss = new Spreadsheet();
+            string filename = Path.Combine(_testDirectory, "validSpreadsheet.xml");
+            string version = ss.GetSavedVersion(filename);
+            Assert.AreEqual("1.0", version, "The version should match the one specified in the file.");
+        }
 
         [TestMethod]
         public void Save_SpreadsheetWithVariousContents_WritesExpectedXml()
