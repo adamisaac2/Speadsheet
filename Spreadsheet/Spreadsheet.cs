@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using System.Xml;
 using SpreadsheetUtilities;
 using static System.Net.Mime.MediaTypeNames;
 
@@ -35,19 +36,34 @@ namespace SS
     public class Spreadsheet : AbstractSpreadsheet
     {
         // Dictionary to hold cell names and their contents
-        private Dictionary<string, object> cells = new Dictionary<string, object>();
+        private Dictionary<string, Cell> cells = new Dictionary<string, Cell>();
 
         // A DependencyGraph to track dependencies between cells
         private DependencyGraph dependencies = new DependencyGraph();
 
         public override bool Changed { get => throw new NotImplementedException(); protected set => throw new NotImplementedException(); }
 
-        //Zero argument constructor
-        public Spreadsheet()
+        // Zero-argument constructor
+        public Spreadsheet() : base(s => true, s => s, "default")
         {
         }
 
-        public override ISet<string> SetCellContents(string name, Formula formula)
+        // Three-argument constructor
+        public Spreadsheet(Func<string, bool> isValid, Func<string, string> normalize, string version)
+            : base(isValid, normalize, version)
+        {
+        }
+
+        // Four-argument constructor
+        public Spreadsheet(string pathToFile, Func<string, bool> isValid, Func<string, string> normalize, string version)
+            : base(isValid, normalize, version)
+        {
+            // Note: Actual loading from the file will be implemented later.
+            // For now, perhaps just store the path or prepare the object without reading the file.
+            this.PathToFile = pathToFile;
+        }
+
+        protected override IList<string> SetCellContents(string name, Formula formula)
         {
 
             // Validate the input parameters
@@ -71,10 +87,10 @@ namespace SS
             UpdateDependencies(name, formula);
 
             //Check for circular dependency, and if certain cells need to be recalculated
-            GetCellsToRecalculate(name);
+           IList<string> cellsToRecalculate = GetCellsToRecalculate(name).ToList();
 
             // After updating the cell's formula, determine which cells are affected by this change.
-            ISet<string> affectedCells = GetAffectedCells(name);
+            IList<string> affectedCells = GetCellsToRecalculate(name).OrderBy(cell => cell).ToList();
 
             // Calculate the set of cells affected by this change
             return affectedCells;
@@ -113,7 +129,7 @@ namespace SS
         }
 
 
-        public override ISet<string> SetCellContents(string name, double number)
+        protected override IList<string> SetCellContents(string name, double number)
         {
             //If the name is null or empty or invalid throw an exception.
             if (string.IsNullOrEmpty(name) || !IsValidName(name))
@@ -122,25 +138,21 @@ namespace SS
             }
 
             // If the cell doesnt exist, create it
-            if (!cells.ContainsKey(name))
+            if (cells.ContainsKey(name) && cells[name].Content is Formula)
             {
-                cells[name] = new Cell(number);
-            }
-            else
-            {
-                // Update existing cells content
-                cells[name] = new Cell(number);
+                dependencies.ReplaceDependents(name, new HashSet<string>());
             }
 
-            // Update dependencies and calculate affected cells
-            var affectedCells = new HashSet<string>();
-            
-            affectedCells.Add(name);
-           
-            AddDependentsRecursively(name, affectedCells);
+            // Update existing cells content
+            cells[name] = new Cell(number);
+
+            dependencies.ReplaceDependees(name, new HashSet<string>());
+
+            List<string> cellsToRecalculate = new List<string>(GetCellsToRecalculate(name));
+
+            return cellsToRecalculate; 
+
           
-            // Return the set of affected cells
-            return affectedCells;
         }
 
         private void AddDependentsRecursively(string name, HashSet<string> affectedCells)
@@ -369,13 +381,83 @@ namespace SS
 
         public override string GetSavedVersion(string filename)
         {
-            throw new NotImplementedException();
+            try
+            {
+                XmlDocument xmlDoc = new XmlDocument();
+                xmlDoc.Load(filename);
+
+                XmlNode versionNode = xmlDoc.SelectSingleNode("//version");
+
+                if (versionNode != null)
+                {
+                    XmlAttribute versionAttribute = xmlDoc.DocumentElement.Attributes["version"];
+                    if (versionAttribute == null)
+                    {
+                        throw new SpreadsheetReadWriteException("Version information not found in file");
+                    }
+                    return versionAttribute.Value;
+                }
+                return versionNode.InnerText;
+            }
+            catch (Exception ex) when (ex is XmlException || ex is IOException)
+            {
+                throw new SpreadsheetReadWriteException("An error occured while reading the file " + ex.Message);
+            }
+            
         }
 
         public override void Save(string filename)
         {
-            throw new NotImplementedException();
+            try
+            {
+                // Create an XmlWriterSettings object with Indent set to true.
+                XmlWriterSettings settings = new XmlWriterSettings();
+                settings.Indent = true; // To make the output XML file human-readable
+
+                // Create an XmlWriter inside using statement for automatic resource management
+                using (XmlWriter writer = XmlWriter.Create(filename, settings))
+                {
+                    // Write the beginning of the document
+                    writer.WriteStartDocument();
+                    writer.WriteStartElement("spreadsheet");
+                    writer.WriteAttributeString("version", this.Version);
+
+                    // Iterate over all non-empty cells in the spreadsheet
+                    foreach (var kvp in cells)
+                    {
+                        string cellName = kvp.Key;
+                        object cellContents = kvp.Value;
+
+                        // Write the cell element
+                        writer.WriteStartElement("cell");
+
+                        // Write the name element
+                        writer.WriteElementString("name", cellName);
+
+                        // Write the contents element
+                        string contentsToWrite = cellContents switch
+                        {
+                            double d => d.ToString(),
+                            Formula f => "=" + f.ToString(),
+                            _ => cellContents.ToString() // Default to string representation
+                        };
+
+                        writer.WriteElementString("contents", contentsToWrite);
+                        writer.WriteEndElement(); // cell
+                    }
+
+                    // Write the end of the document
+                    writer.WriteEndElement(); // spreadsheet
+                    writer.WriteEndDocument();
+                }
+            }
+            catch (Exception ex) when (ex is IOException || ex is XmlException)
+            {
+                // Wrap the exception with a SpreadsheetReadWriteException
+                throw new SpreadsheetReadWriteException("An error occurred while saving the file: " + ex.Message);
+            }
         }
+    
 
         public override string GetXML()
         {
@@ -384,7 +466,7 @@ namespace SS
             StringBuilder xml = new StringBuilder();
             xml.Append("<spreadsheet>");
 
-            foreach(KeyValuePair<string, object> cellPair in cells)
+            foreach(KeyValuePair<string, Cell> cellPair in cells)
             {
                 Cell cell = cellPair.Value as Cell;
                 if (cell != null && cell.Content != null)
