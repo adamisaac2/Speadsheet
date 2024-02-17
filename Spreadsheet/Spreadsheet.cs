@@ -99,7 +99,7 @@ namespace SS
 
 
 
-        public override ISet<string> SetCellContents(string name, string text)
+        protected override IList<string> SetCellContents(string name, string text)
         {
             // Validate parameters
             if (text == null)
@@ -107,26 +107,43 @@ namespace SS
             if (string.IsNullOrEmpty(name) || !IsValidName(name))
                 throw new InvalidNameException();
 
+            // Track if the cell was previously present to determine if dependents need to be recalculated
+            bool cellPreviouslyExisted = cells.ContainsKey(name);
+
             // Update or create the cell with the new content
-            if (cells.ContainsKey(name))
+            if (string.IsNullOrEmpty(text))
             {
-                // If the text is empty, it implies the cell should be removed from the dictionary
-                if (string.IsNullOrEmpty(text))
+                // If the text is empty and the cell exists, remove it
+                if (cellPreviouslyExisted)
+                {
                     cells.Remove(name);
-                else
-                    cells[name] = new Cell(text);
+                    dependencies.ReplaceDependents(name, new HashSet<string>());
+                }
             }
-            else if (!string.IsNullOrEmpty(text))
+            else
             {
-                cells.Add(name, new Cell(text));
+                // Either update the existing cell or add a new one with the text content
+                cells[name] = new Cell(text);
+
+                // If the cell is being updated from a non-text value to text, clear its dependents
+                if (cellPreviouslyExisted)
+                {
+                    dependencies.ReplaceDependents(name, new HashSet<string>());
+                }
             }
 
-            // Since we are setting text, we can remove all dependents of this cell
-            // because text cannot have dependents
-            dependencies.ReplaceDependents(name, new HashSet<string>());
+            // Since the cell's content has changed, we need to recalculate dependencies.
+            // Start with the changed cell itself
+            var affectedCells = new List<string> { name };
 
-            // Retrieve and return all affected cells
-            return GetAffectedCells(name);
+            // If the cell previously existed, add its dependents to the list for recalculation
+            if (cellPreviouslyExisted)
+            {
+                var dependents = GetCellsToRecalculate(name);
+                affectedCells.AddRange(dependents.Where(cellName => cellName != name));
+            }
+
+            return affectedCells;
         }
 
 
@@ -612,6 +629,25 @@ namespace SS
             {
                 return base.GetDirectDependents(name);
             }
+
+            public IList<string> TestSetCellContents(string name, string text)
+            {
+                // Directly call the protected method
+                return this.SetCellContents(name, text);
+            }
+
+            public IList<string> TestSetCellContents(string name, double number)
+            {
+                // Directly call the protected method
+                return this.SetCellContents(name, number);
+            }
+
+            public IList<string> TestSetCellContents(string name, Formula formula)
+            {
+                // Directly call the protected method
+                return this.SetCellContents(name, formula);
+            }
+
         }
 
     }

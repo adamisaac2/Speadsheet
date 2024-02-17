@@ -1,4 +1,38 @@
-﻿// Written by Joe Zachary for CS 3500, September 2013
+﻿using SpreadsheetUtilities;
+
+// Note: you are not required to add your own header comment. Leave this one in place.
+// Assignment 5
+// Written by Joe Zachary for CS 3500, September 2013
+// Version 1.8
+// Revision history:  
+//   Version 1.1 9/20/12 12:59 p.m.  Fixed comment that describes circular dependencies
+//   Version 1.2 9/20/12 1:38 p.m.   Changed return type of GetCellContents to object
+//   Version 1.3 9/24/12 8:41 a.m.   Modified the specification of GetCellsToRecalculate by 
+//                                   adding a requirement for the names parameter
+// Branched from PS4Skeleton
+//   Version 1.4                     Branched from PS4Skeleton
+//           Edited class comment for AbstractSpreadsheet
+//           Made the three SetCellContents methods protected
+//           Added a new method SetContentsOfCell.  This method abstract.
+//           Added a new method GetCellValue.  This method is abstract.
+//           Added a new property Changed.  This property is abstract.
+//           Added a new method Save.  This method is abstract.
+//           Added a new method GetSavedVersion.  This method is abstract.
+//           Added a new class SpreadsheetReadWriteException.
+//           Added IsValid, Normalize, and Version properties
+//           Added a constructor for AbstractSpreadsheet
+
+// Revision history:
+//    Version 1.5 9/28/12 2:22 p.m.   Fixed example in comment for Save
+//    Version 1.6 9/29/12 11:07 a.m.  Put a constructor into SpreadsheetReadWriteException
+//    Version 1.7 9/29/12 11:14 a.m.  Added missing </summary> tag to comment
+//    
+//    Version 1.8 (Daniel Kopta)      Unified error checking for setting cell contents
+//                (Fall 2019)         SetCellContents signatures changed to return IList
+//    Version 1.9 (Jim de St. Germain) Updated documentation
+//    Version 1.91 (Jim de St. Germain) Removed Null requirement checking (C# supports non-nullables!)
+//                            
+
 
 using System;
 using System.Collections.Generic;
@@ -6,9 +40,10 @@ using SpreadsheetUtilities;
 
 namespace SS
 {
-
     /// <summary>
-    /// Thrown to indicate that a change to a cell will cause a circular dependency.
+    ///   <para>
+    ///      Thrown to indicate that a change to a cell will cause a circular dependency.
+    ///   </para>
     /// </summary>
     public class CircularException : Exception
     {
@@ -16,11 +51,14 @@ namespace SS
 
 
     /// <summary>
-    /// Thrown to indicate that a name parameter was either null or invalid.
+    ///   <para>
+    ///     Thrown to indicate that a name parameter is invalid, e.g., "" (empty).
+    ///   </para>
     /// </summary>
     public class InvalidNameException : Exception
     {
     }
+
 
     /// <summary>
     ///   <para>
@@ -41,7 +79,6 @@ namespace SS
     }
 
 
-
     /// <summary>
     /// <para>
     ///     An AbstractSpreadsheet object represents the state of a simple spreadsheet.  A 
@@ -51,17 +88,21 @@ namespace SS
     ///     A string is a valid cell name if and only if:
     /// </para>
     /// <list type="number">
-    ///      <item> its first character is an underscore or a letter</item>
-    ///      <item> its remaining characters (if any) are underscores and/or letters and/or digits</item>
+    ///      <item> The first "half" starts with one or more letters</item>
+    ///      <item> The second "half" ends with one or more numbers (digits)</item>
     /// </list>   
-    /// <para>
-    ///     Note that this is the same as the definition of valid variable from the Formula class assignment.
-    /// </para>
     /// 
+    /// <example>
+    ///     For example, "A15", "a15", "XY032", and "BC7" are cell names so long as they
+    ///     satisfy IsValid.  On the other hand, "Z", "X_", and "hello" are not cell names,
+    ///     regardless of IsValid.
+    /// </example>
+    ///
     /// <para>
-    ///     For example, "x", "_", "x2", "y_15", and "___" are all valid cell  names, but
-    ///     "25", "2x", and "&amp;" are not.  Cell names are case sensitive, so "x" and "X" are
-    ///     different cell names.
+    ///     Any valid incoming cell name, whether passed as a parameter or embedded in a formula,
+    ///     must be normalized with the Normalize method before it is used by or saved in 
+    ///     this spreadsheet.  For example, if Normalize is s => s.ToUpper(), then
+    ///     the Formula "x3+a5" should be converted to "X3+A5" before use.
     /// </para>
     /// 
     /// <para>
@@ -93,11 +134,13 @@ namespace SS
     ///   <item>If a cell's contents is a double, its value is that double.</item>
     /// 
     ///   <item>
+    ///     <para>
     ///      If a cell's contents is a Formula, its value is either a double or a FormulaError,
     ///      as reported by the Evaluate method of the Formula class.  The value of a Formula,
     ///      of course, can depend on the values of variables.  The value of a variable is the 
     ///      value of the spreadsheet cell it names (if that cell's value is a double) or 
     ///      is undefined (otherwise).
+    ///      </para>
     ///   </item>
     /// 
     /// </list>
@@ -112,19 +155,24 @@ namespace SS
     /// </summary>
     public abstract class AbstractSpreadsheet
     {
-        /// <summary>
-        /// Returns an Enumerable that can be used to enumerates 
-        /// the names of all the non-empty cells in the spreadsheet.
-        /// </summary>
-        public abstract IEnumerable<String> GetNamesOfAllNonemptyCells();
 
+        /// <summary>
+        ///   Returns the names of all non-empty cells.
+        /// </summary>
+        /// 
+        /// <returns>
+        ///     Returns an Enumerable that can be used to enumerate
+        ///     the names of all the non-empty cells in the spreadsheet.  If 
+        ///     all cells are empty then an IEnumerable with zero values will be returned.
+        /// </returns>
+        public abstract IEnumerable<String> GetNamesOfAllNonemptyCells();
 
         /// <summary>
         ///   Returns the contents (as opposed to the value) of the named cell.
         /// </summary>
         /// 
         /// <exception cref="InvalidNameException"> 
-        ///   Thrown if the name is null or invalid
+        ///   Thrown if the name is invalid: blank/empty/""
         /// </exception>
         /// 
         /// <param name="name">The name of the spreadsheet cell to query</param>
@@ -135,13 +183,16 @@ namespace SS
         /// </returns>
         public abstract object GetCellContents(String name);
 
-
         /// <summary>
         ///  Set the contents of the named cell to the given number.  
         /// </summary>
         /// 
+        /// <requires> 
+        ///   The name parameter must be valid: non-empty/not ""
+        /// </requires>
+        /// 
         /// <exception cref="InvalidNameException"> 
-        ///   If the name is null or invalid, throw an InvalidNameException
+        ///   If the name is invalid, throw an InvalidNameException
         /// </exception>
         /// 
         /// <param name="name"> The name of the cell </param>
@@ -149,13 +200,20 @@ namespace SS
         /// 
         /// <returns>
         ///   <para>
-        ///      The method returns a set consisting of name plus the names of all other cells whose value depends, 
-        ///      directly or indirectly, on the named cell.
+        ///       This method returns a LIST consisting of the passed in name followed by the names of all 
+        ///       other cells whose value depends, directly or indirectly, on the named cell.
         ///   </para>
-        /// 
+        ///
         ///   <para>
-        ///      For example, if name is A1, B1 contains A1*2, and C1 contains B1+A1, the
-        ///      set {A1, B1, C1} is returned.
+        ///       The order must correspond to a valid dependency ordering for recomputing
+        ///       all of the cells, i.e., if you re-evaluate each cell in the order of the list,
+        ///       the overall spreadsheet will be consistently updated.
+        ///   </para>
+        ///
+        ///   <para>
+        ///     For example, if name is A1, B1 contains A1*2, and C1 contains B1+A1, the
+        ///     set {A1, B1, C1} is returned, i.e., A1 was changed, so then A1 must be 
+        ///     evaluated, followed by B1 re-evaluated, followed by C1 re-evaluated.
         ///   </para>
         /// </returns>
         protected abstract IList<String> SetCellContents(String name, double number);
@@ -164,39 +222,47 @@ namespace SS
         /// The contents of the named cell becomes the text.  
         /// </summary>
         /// 
-        /// <exception cref="ArgumentNullException"> 
-        ///   If text is null, throw an ArgumentNullException.
-        /// </exception>
+        /// <requires> 
+        ///   The name parameter must be valid/non-empty ""
+        /// </requires>
         /// 
         /// <exception cref="InvalidNameException"> 
-        ///   If the name is null or invalid, throw an InvalidNameException
-        /// </exception>
+        ///   If the name is invalid, throw an InvalidNameException
+        /// </exception>       
         /// 
         /// <param name="name"> The name of the cell </param>
         /// <param name="text"> The new content/value of the cell</param>
         /// 
         /// <returns>
-        ///   The method returns a set consisting of name plus the names of all 
-        ///   other cells whose value depends, directly or indirectly, on the 
-        ///   named cell.
-        /// 
+        ///   <para>
+        ///       This method returns a LIST consisting of the passed in name followed by the names of all 
+        ///       other cells whose value depends, directly or indirectly, on the named cell.
+        ///   </para>
+        ///
+        ///   <para>
+        ///       The order must correspond to a valid dependency ordering for recomputing
+        ///       all of the cells, i.e., if you re-evaluate each cell in the order of the list,
+        ///       the overall spreadsheet will be consistently updated.
+        ///   </para>
+        ///
         ///   <para>
         ///     For example, if name is A1, B1 contains A1*2, and C1 contains B1+A1, the
-        ///     set {A1, B1, C1} is returned.
+        ///     set {A1, B1, C1} is returned, i.e., A1 was changed, so then A1 must be 
+        ///     evaluated, followed by B1 re-evaluated, followed by C1 re-evaluated.
         ///   </para>
         /// </returns>
-        public abstract ISet<String> SetCellContents(String name, String text);
+        protected abstract IList<String> SetCellContents(String name, String text);
 
         /// <summary>
         /// Set the contents of the named cell to the formula.  
         /// </summary>
         /// 
-        /// <exception cref="ArgumentNullException"> 
-        ///   If formula parameter is null, throw an ArgumentNullException.
-        /// </exception>
+        /// <requires> 
+        ///   The name parameter must be valid/non-empty
+        /// </requires>
         /// 
         /// <exception cref="InvalidNameException"> 
-        ///   If the name is null or invalid, throw an InvalidNameException
+        ///   If the name is invalid, throw an InvalidNameException
         /// </exception>
         /// 
         /// <exception cref="CircularException"> 
@@ -210,14 +276,21 @@ namespace SS
         /// 
         /// <returns>
         ///   <para>
-        ///     The method returns a Set consisting of name plus the names of all other 
-        ///     cells whose value depends, directly or indirectly, on the named cell.
+        ///       This method returns a LIST consisting of the passed in name followed by the names of all 
+        ///       other cells whose value depends, directly or indirectly, on the named cell.
         ///   </para>
-        ///   <para> 
+        ///
+        ///   <para>
+        ///       The order must correspond to a valid dependency ordering for recomputing
+        ///       all of the cells, i.e., if you re-evaluate each cell in the order of the list,
+        ///       the overall spreadsheet will be consistently updated.
+        ///   </para>
+        ///
+        ///   <para>
         ///     For example, if name is A1, B1 contains A1*2, and C1 contains B1+A1, the
-        ///     set {A1, B1, C1} is returned.
+        ///     set {A1, B1, C1} is returned, i.e., A1 was changed, so then A1 must be 
+        ///     evaluated, followed by B1 re-evaluated, followed by C1 re-evaluated.
         ///   </para>
-        /// 
         /// </returns>
         protected abstract IList<String> SetCellContents(String name, Formula formula);
 
@@ -227,13 +300,9 @@ namespace SS
         /// values depend directly on the value of the named cell. 
         /// </summary>
         /// 
-        /// <exception cref="ArgumentNullException"> 
-        ///   If the name is null, throw an ArgumentNullException.
-        /// </exception>
-        /// 
-        /// <exception cref="InvalidNameException"> 
-        ///   If the name is null or invalid, throw an InvalidNameException
-        /// </exception>
+        /// <required>
+        ///    The name must be valid upon entry to the function.
+        /// </required>
         /// 
         /// <param name="name"></param>
         /// <returns>
@@ -260,10 +329,10 @@ namespace SS
         ///     all cells that must be recalculated.
         ///   </para>
         ///   
-        ///   <para>
-        ///     Invariant: Requires that names be non-null.  Also requires that if names contains s,
-        ///     then s must be a valid non-null cell name.
-        ///   </para>
+        ///   <requires>
+        ///     Invariant: Requires that if names contains s,
+        ///     then s must be a valid cell name.
+        ///   </requires>
         /// 
         ///   <para> 
         ///     WARNING: THIS METHOD DEPENDS ON THE ABSTRACT METHOD GetDirectDependents.
@@ -304,17 +373,14 @@ namespace SS
         protected IEnumerable<String> GetCellsToRecalculate(ISet<String> names)
         {
             LinkedList<String> changed = new LinkedList<String>();
-            HashSet<String>    visited = new HashSet<String>();
-           //For each loop that goes through the parameter set names
+            HashSet<String> visited = new HashSet<String>();
             foreach (String name in names)
             {
-               //If the set does not contain a name, call the visit method with the 4 parameters.
                 if (!visited.Contains(name))
                 {
                     Visit(name, name, visited, changed);
                 }
             }
-           //Return the changed cell
             return changed;
         }
 
@@ -338,37 +404,24 @@ namespace SS
 
 
         /// <summary>
-        /// Performs a depth-first search (DFS) on the dependency graph starting from a specified cell.
-        /// It is used to determine the order in which cells need to be recalculated due to a change in the starting cell,
-        /// while also detecting any circular dependencies.
+        /// A helper for the GetCellsToRecalculate method.
+        /// 
+        ///   -- You should fully comment what is going on below using XML tags as appropriate --
         /// </summary>
-        /// <param name="start">The cell from which the recalculation process began. Used to detect circular dependencies.</param>
-        /// <param name="name">The current cell being visited in the DFS.</param>
-        /// <param name="visited">A set of cells that have already been visited during the DFS. Helps avoid revisiting cells, thereby preventing infinite loops.</param>
-        /// <param name="changed">A list that records the cells in the order they need to be recalculated. Cells are added to the front of the list to ensure they are recalculated in the correct order.</param>
-        /// <exception cref="CircularException">Thrown if a circular dependency is detected, indicated by encountering the start cell again during the DFS.</exception>
         private void Visit(String start, String name, ISet<String> visited, LinkedList<String> changed)
         {
-            // Mark the current cell as visited
             visited.Add(name);
-
-            // Iterate over all direct dependents of the current cell
             foreach (String n in GetDirectDependents(name))
             {
-                // If a direct dependent is the start cell, we've encountered a circular dependency
                 if (n.Equals(start))
                 {
                     throw new CircularException();
                 }
-                // If this dependent hasn't been visited, recursively visit it
                 else if (!visited.Contains(n))
                 {
                     Visit(start, n, visited, changed);
                 }
             }
-
-            // Once all dependents of the current cell have been processed, add the current cell to the front of the changed list.
-            // This ensures that cells are recalculated in reverse order of their visitation, adhering to their dependency order.
             changed.AddFirst(name);
         }
 
@@ -550,7 +603,6 @@ namespace SS
         ///   value should be either a string, a double, or a SpreadsheetUtilities.FormulaError.
         /// </returns>
         public abstract object GetCellValue(String name);
-
 
     }
 }
