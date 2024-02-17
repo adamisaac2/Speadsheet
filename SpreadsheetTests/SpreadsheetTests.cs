@@ -73,7 +73,30 @@ namespace SpreadsheetTests
             ss.SetContentsOfCell("1Invalid", "10");
         }
 
+        [TestMethod]
+        public void SetContentsOfCell_ValidDouble_ConvertsAndSetsCorrectly()
+        {
+            var ss = new Spreadsheet();
+            var affectedCells = ss.SetContentsOfCell("A1", "2.5");
+            Assert.IsTrue(affectedCells.Contains("A1"));
+            Assert.AreEqual(2.5, ss.GetCellValue("A1"));
+        }
 
+        [TestMethod]
+        [ExpectedException(typeof(FormulaFormatException))]
+        public void SetContentsOfCell_InvalidFormula_ThrowsException()
+        {
+            var ss = new Spreadsheet();
+            ss.SetContentsOfCell("A1", "=A2)");
+        }
+
+        [TestMethod]
+        public void GetXml_EmptySpreadsheet_ReturnsEmptyXml()
+        {
+            var ss = new Spreadsheet();
+            string expectedXml = "<spreadsheet></spreadsheet>";
+            Assert.AreEqual(expectedXml, ss.GetXML());
+        }
 
 
     }

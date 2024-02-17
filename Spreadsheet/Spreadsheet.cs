@@ -342,7 +342,44 @@ namespace SS
             return Regex.IsMatch(name, pattern);
         }
 
-       
+        public override IList<string> SetContentsOfCell(string name, string content)
+        {
+            if (!IsValidName(name))
+            {
+                throw new InvalidNameException();
+            }
+            double number;
+           
+            if(double.TryParse(content, out number))
+            {
+                var affectedCells = SetCellContents(name, number);
+                return affectedCells.ToList();
+
+            }
+           
+            else if (content.StartsWith("="))
+            {
+                string formulaString = content.Substring(1);
+                try
+                {
+                    Formula formula = new Formula(formulaString);
+                    var affectedCells = SetCellContents(name, formula);
+                    return affectedCells.ToList();
+                }
+                catch
+                {
+                    throw;
+                }
+
+            }
+           
+            else
+            {
+                var affectedCells = SetCellContents(name, content);
+                return affectedCells.ToList();
+            }
+        }
+
         public override string GetSavedVersion(string filename)
         {
             try
