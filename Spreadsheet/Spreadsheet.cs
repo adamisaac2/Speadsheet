@@ -59,7 +59,7 @@ namespace SS
             : base(isValid, normalize, version)
         {
             // Note: Actual loading from the file will be implemented later.
-            // For now, perhaps just store the path or prepare the object without reading the file.
+            // For now, perhaps just store the path or prepare the object without reading the file
             this.PathToFile = pathToFile;
         }
 
