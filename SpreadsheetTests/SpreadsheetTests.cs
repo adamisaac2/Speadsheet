@@ -73,6 +73,24 @@ namespace SpreadsheetTests
 
 
         [TestMethod]
+        public void GetCellValue_FormulaThrowsException_ReturnsFormulaError()
+        {
+            // Arrange
+            var ss = new TestableSpreadsheet();
+            ss.SetContentsOfCell("A1", "=1/0"); // Setup that triggers an exception
+
+            // Act
+            var result = ss.GetCellValue("A1");
+
+            // Assert
+            // Check if result is of type FormulaError using pattern matching
+            // Assert
+            // Check if result is of type FormulaError using pattern matching
+            bool isFormulaError = result is SpreadsheetUtilities.FormulaError;
+            Assert.IsTrue(isFormulaError, "Expected a FormulaError when formula evaluation throws an exception.");
+        }
+
+            [TestMethod]
         public void SetCellContents_ReplacingFormulaWithDouble_AffectsDependentCells()
         {
             // Arrange

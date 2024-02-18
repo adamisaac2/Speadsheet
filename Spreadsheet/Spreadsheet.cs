@@ -174,19 +174,6 @@ namespace SS
           
         }
 
-        //private void AddDependentsRecursively(string name, HashSet<string> affectedCells)
-        //{
-
-        //    foreach (var dependent in dependencies.GetDependents(name))
-        //    {
-        //        if (affectedCells.Add(dependent)) // Ensure the dependent hasn't already been processed
-        //        {
-        //            // Recursively add the dependents of the current dependent
-        //            AddDependentsRecursively(dependent, affectedCells);
-        //        }
-        //    }
-        //}
-
         public override object GetCellContents(string name)
         {
             // Validate cell name
@@ -270,39 +257,6 @@ namespace SS
             //Return the dependents of name
             return dependencies.GetDependents(name);
         }
-
-    
-        //private ISet<string> GetAffectedCells(string name)
-        //{
-        //    HashSet<string> affectedCells = new HashSet<string>();
-        //    Queue<string> cellsToCheck = new Queue<string>();
-
-        //    // Start the process with the initially changed cell by enqueuing its name
-        //    cellsToCheck.Enqueue(name);
-
-        //    // Continue processing as long as there are cells in the queue to check
-        //    while (cellsToCheck.Count > 0)
-        //    {
-        //        // Dequeue the next cell to process
-        //        string currentCell = cellsToCheck.Dequeue();
-
-        //        // Add the current cell to the set of affected cells
-        //        affectedCells.Add(currentCell);
-
-        //        // For each cell that directly depends on the current cell
-        //        foreach (string dependent in GetDirectDependents(currentCell))
-        //        {
-        //            // Check if this dependent cell has not already been processed
-        //            if (!affectedCells.Contains(dependent))
-        //            {
-        //                // If not processed, enqueue the dependent cell for further checks
-        //                cellsToCheck.Enqueue(dependent);
-        //            }
-        //        }
-        //    }
-        //    // Return the complete set of cells that are affected directly or indirectly.
-        //    return affectedCells;
-        //}
 
         private void UpdateDependencies(string name, Formula formula)
         {
@@ -582,10 +536,6 @@ namespace SS
                         {
                             return (double)content;
                         }
-                        else if (content is SpreadsheetUtilities.FormulaError)
-                        {
-                            throw new ArgumentException("Reference to cell with error.");
-                        }
                     }
                     throw new ArgumentException("Reference to an undefined cell.");
                 };
@@ -652,3 +602,57 @@ namespace SS
 
     }
 }
+
+
+
+
+
+
+
+
+
+//private ISet<string> GetAffectedCells(string name)
+//{
+//    HashSet<string> affectedCells = new HashSet<string>();
+//    Queue<string> cellsToCheck = new Queue<string>();
+
+//    // Start the process with the initially changed cell by enqueuing its name
+//    cellsToCheck.Enqueue(name);
+
+//    // Continue processing as long as there are cells in the queue to check
+//    while (cellsToCheck.Count > 0)
+//    {
+//        // Dequeue the next cell to process
+//        string currentCell = cellsToCheck.Dequeue();
+
+//        // Add the current cell to the set of affected cells
+//        affectedCells.Add(currentCell);
+
+//        // For each cell that directly depends on the current cell
+//        foreach (string dependent in GetDirectDependents(currentCell))
+//        {
+//            // Check if this dependent cell has not already been processed
+//            if (!affectedCells.Contains(dependent))
+//            {
+//                // If not processed, enqueue the dependent cell for further checks
+//                cellsToCheck.Enqueue(dependent);
+//            }
+//        }
+//    }
+//    // Return the complete set of cells that are affected directly or indirectly.
+//    return affectedCells;
+//}
+
+
+//private void AddDependentsRecursively(string name, HashSet<string> affectedCells)
+//{
+
+//    foreach (var dependent in dependencies.GetDependents(name))
+//    {
+//        if (affectedCells.Add(dependent)) // Ensure the dependent hasn't already been processed
+//        {
+//            // Recursively add the dependents of the current dependent
+//            AddDependentsRecursively(dependent, affectedCells);
+//        }
+//    }
+//}
