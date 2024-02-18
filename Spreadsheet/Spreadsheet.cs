@@ -41,7 +41,8 @@ namespace SS
         // A DependencyGraph to track dependencies between cells
         private DependencyGraph dependencies = new DependencyGraph();
 
-        public override bool Changed { get => throw new NotImplementedException(); protected set => throw new NotImplementedException(); }
+        private bool changed = false;
+        public override bool Changed { get => changed; protected set => changed = value; }
 
         // Zero-argument constructor
         public Spreadsheet() : base(s => true, s => s, "default")

@@ -68,6 +68,82 @@ namespace SpreadsheetTests
 
 
 
+
+
+
+
+        [TestMethod]
+        public void SetCellContents_ReplacingFormulaWithDouble_AffectsDependentCells()
+        {
+            // Arrange
+            var ss = new TestableSpreadsheet();
+            ss.SetContentsOfCell("A1", "=B1 + C1"); // Initially, A1 depends on B1 and C1.
+            ss.SetContentsOfCell("B1", "1"); // Set initial values for B1 and C1 to ensure A1's formula can be calculated.
+            ss.SetContentsOfCell("C1", "1");
+
+            // Act
+            ss.SetContentsOfCell("A1", "5.0"); // Replace the formula in A1 with a double.
+
+            // Assert
+            // Verify that changing A1's content to a double doesn't throw an error and updates correctly.
+            // This indirectly checks if A1's dependencies on B1 and C1 are cleared because A1 no longer calculates based on them.
+            Assert.AreEqual(5.0, ss.GetCellValue("A1"), "A1 should now directly contain the value 5.0.");
+
+            // Additionally, you might want to check that changing B1 or C1 no longer affects A1.
+            ss.SetContentsOfCell("B1", "2");
+            Assert.AreEqual(5.0, ss.GetCellValue("A1"), "A1's value should remain unchanged after modifying B1, indicating dependencies are cleared.");
+        }
+
+        [TestMethod]
+        public void NewlyCreatedSpreadsheet_IsNotChanged()
+        {
+            var ss = new Spreadsheet();
+            Assert.IsFalse(ss.Changed, "A new spreadsheet should not be marked as changed.");
+        }
+
+
+        [TestMethod]
+        public void Spreadsheet_FourArgumentConstructor_InitializesCorrectly()
+        {
+            // Arrange
+            string pathToFile = "testPath.xml";
+            Func<string, bool> isValid = s => true;
+            Func<string, string> normalize = s => s.ToUpper();
+            string version = "1.0";
+
+            // Act
+            var ss = new Spreadsheet(pathToFile, isValid, normalize, version);
+
+            // Assert
+            // Verify that the Spreadsheet object is initialized with the correct properties
+            Assert.AreEqual(version, ss.Version);
+            // Assuming you store the path or have a related property to indicate readiness to load
+            // Assert.AreEqual(pathToFile, ss.PathToFile); // Uncomment or modify based on your actual implementation
+
+            // As file loading isn't implemented, other tests would be speculative
+            // Future tests should verify file loading and parsing once implemented
+        }
+
+        [TestMethod]
+        public void Spreadsheet_ThreeArgumentConstructor_InitializesCorrectly()
+        {
+            // Arrange
+            Func<string, bool> isValid = s => true; // Example validation function
+            Func<string, string> normalize = s => s.ToUpper(); // Example normalization function
+            string version = "1.0";
+
+            // Act
+            var ss = new Spreadsheet(isValid, normalize, version);
+
+            // Assert
+            // Verify that the Spreadsheet object is initialized with the provided version
+            // This assumes you have a way to retrieve the version, such as a Version property
+            Assert.AreEqual(version, ss.Version);
+
+            // Further tests could verify the behavior of isValid and normalize
+            // by interacting with the ss object, if such interactions are supported
+        }
+
         [TestMethod]
         public void ChangeInCellAffectsDirectAndIndirectDependents()
         {
