@@ -70,7 +70,19 @@ namespace SpreadsheetTests
 
 
 
+        [TestMethod]
+        [ExpectedException(typeof(InvalidNameException), "Expected GetCellValue to throw InvalidNameException for invalid cell name.")]
+        public void GetCellValue_InvalidName_ThrowsInvalidNameException2()
+        {
+            // Arrange
+            var ss = new TestableSpreadsheet();
+            string invalidName = "123Invalid"; // Example of an invalid name, adjust based on your validation logic
 
+            // Act
+            ss.GetCellValue(invalidName);
+
+            // Assert is handled by the ExpectedException attribute
+        }
 
         [TestMethod]
         public void GetCellValue_FormulaThrowsException_ReturnsFormulaError()
