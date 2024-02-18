@@ -70,37 +70,24 @@ namespace SpreadsheetTests
 
 
 
-        [TestMethod]
-        [ExpectedException(typeof(InvalidNameException), "Expected GetCellValue to throw InvalidNameException for invalid cell name.")]
-        public void GetCellValue_InvalidName_ThrowsInvalidNameException2()
-        {
-            // Arrange
-            var ss = new TestableSpreadsheet();
-            string invalidName = "123Invalid"; // Example of an invalid name, adjust based on your validation logic
 
-            // Act
-            ss.GetCellValue(invalidName);
+        //[TestMethod]
+        //[ExpectedException(typeof(FormulaError))]
+        //public void GetCellValue_FormulaThrowsException_ReturnsFormulaError()
+        //{
+        //    // Arrange
+        //    var ss = new TestableSpreadsheet();
+        //    ss.SetContentsOfCell("A1", "=1/0"); // Setup that triggers an exception
 
-            // Assert is handled by the ExpectedException attribute
-        }
+        //    // Act
+        //    var result = ss.GetCellValue("A1");
 
-        [TestMethod]
-        public void GetCellValue_FormulaThrowsException_ReturnsFormulaError()
-        {
-            // Arrange
-            var ss = new TestableSpreadsheet();
-            ss.SetContentsOfCell("A1", "=1/0"); // Setup that triggers an exception
-
-            // Act
-            var result = ss.GetCellValue("A1");
-
-            // Assert
-            // Check if result is of type FormulaError using pattern matching
-            // Assert
-            // Check if result is of type FormulaError using pattern matching
-            bool isFormulaError = result is SpreadsheetUtilities.FormulaError;
-            Assert.IsTrue(isFormulaError, "Expected a FormulaError when formula evaluation throws an exception.");
-        }
+        //    // Assert
+        //    // Check if result is of type FormulaError using pattern matching
+        //    // Assert
+        //    // Check if result is of type FormulaError using pattern matching
+            
+        //}
 
             [TestMethod]
         public void SetCellContents_ReplacingFormulaWithDouble_AffectsDependentCells()
@@ -215,14 +202,23 @@ namespace SpreadsheetTests
         {
             // Arrange
             var ss = new TestableSpreadsheet();
-            ss.SetContentsOfCell("B1", "=1 / 0"); // Formula that should cause an exception (division by zero)
+            ss.SetContentsOfCell("B1", "=1 / 0"); // Formula that should result in an error
 
             // Act
-            var result = ss.GetCellValue("B1");
+            object result = null;
+            try
+            {
+                result = ss.GetCellValue("B1");
+            }
+            catch (Exception ex)
+            {
+                // If any exception is thrown, fail the test because we expect a FormulaError return, not an exception
+                Assert.Fail("No exception should be thrown, but got: " + ex.GetType().FullName);
+            }
 
             // Assert
-            Assert.IsInstanceOfType(result, typeof(SpreadsheetUtilities.FormulaError)); // Verify that a FormulaError is returned
-            // Optionally, check the message of the FormulaError if needed
+            Assert.IsNotNull(result, "Expected a non-null result when formula evaluation fails.");
+            Assert.IsInstanceOfType(result, typeof(SpreadsheetUtilities.FormulaError), "The result should be a FormulaError when formula evaluation fails.");
         }
 
         [TestMethod]
@@ -764,5 +760,22 @@ namespace SpreadsheetTests
         Assert.IsTrue(affectedCells.Contains("A1"), "A1 should be affected as it indirectly depends on C1 through B1.");
     }
 
+        [TestMethod]
+        [ExpectedException(typeof(InvalidNameException))]
+        public void GetCellValue_InvalidName_ThrowsInvalidNameException2()
+        {
+            // Arrange
+            var ss = new TestableSpreadsheet();
+            string invalidName = "123Invalid"; // Example of an invalid name, adjust based on your validation logic
+
+            // Act
+            ss.GetCellValue(invalidName);
+
+            // Assert is handled by the ExpectedException attribute
+        }
+
     }
+
+
+
 }
