@@ -345,7 +345,7 @@ namespace SpreadsheetTests
         public void Save_InvalidPath_ThrowsSpreadsheetReadWriteException()
         {
             var ss = new TestableSpreadsheet();
-            string invalidFilename = Path.Combine(_testDirectory, "invalidPath\\test.xml");
+            string invalidFilename = Path.Combine(_testDirectory, "invalidPath//test.xml");
 
             ss.Save(invalidFilename);
             // Expected to throw due to invalid path
