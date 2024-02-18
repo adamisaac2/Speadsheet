@@ -9,7 +9,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FormulaEvaluatorTester", "F
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{DB3E6105-1DB8-43FA-8CD2-137E9A4536A3}"
 	ProjectSection(SolutionItems) = preProject
+		..\..\..\OneDrive\Desktop\architecture.JPG = ..\..\..\OneDrive\Desktop\architecture.JPG
+		..\..\..\OneDrive\Desktop\dependency_whiteboard.JPG = ..\..\..\OneDrive\Desktop\dependency_whiteboard.JPG
+		..\..\..\OneDrive\Desktop\formula_whiteboard.JPG = ..\..\..\OneDrive\Desktop\formula_whiteboard.JPG
 		README.md = README.md
+		..\..\..\OneDrive\Desktop\spreadsheet_whiteboard.JPG = ..\..\..\OneDrive\Desktop\spreadsheet_whiteboard.JPG
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DependencyGraph", "DependencyGraph\DependencyGraph.csproj", "{F9D87A4D-5138-4CC9-A12A-AC09BC58930A}"
@@ -26,16 +30,23 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FormulaTests", "FormulaTest
 		{F82B5E35-47ED-4943-BA0C-2F1F17CD8727} = {F82B5E35-47ED-4943-BA0C-2F1F17CD8727}
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Spreadsheet", "Spreadsheet\Spreadsheet.csproj", "{64716C70-D1F8-4806-94BE-6382764DBCCB}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Spreadsheet", "Spreadsheet\Spreadsheet.csproj", "{64716C70-D1F8-4806-94BE-6382764DBCCB}"
 	ProjectSection(ProjectDependencies) = postProject
 		{F82B5E35-47ED-4943-BA0C-2F1F17CD8727} = {F82B5E35-47ED-4943-BA0C-2F1F17CD8727}
 		{F9D87A4D-5138-4CC9-A12A-AC09BC58930A} = {F9D87A4D-5138-4CC9-A12A-AC09BC58930A}
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SpreadsheetTests", "SpreadsheetTests\SpreadsheetTests.csproj", "{BA4435F9-39FB-4296-AD1E-753C1CE03E2D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SpreadsheetTests", "SpreadsheetTests\SpreadsheetTests.csproj", "{BA4435F9-39FB-4296-AD1E-753C1CE03E2D}"
 	ProjectSection(ProjectDependencies) = postProject
 		{64716C70-D1F8-4806-94BE-6382764DBCCB} = {64716C70-D1F8-4806-94BE-6382764DBCCB}
 		{F82B5E35-47ED-4943-BA0C-2F1F17CD8727} = {F82B5E35-47ED-4943-BA0C-2F1F17CD8727}
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Whiteboard", "Whiteboard", "{1768CE6C-5DE1-4912-80F2-C7BADC326DCF}"
+	ProjectSection(SolutionItems) = preProject
+		..\..\..\OneDrive\Desktop\dependency_whiteboard.JPG = ..\..\..\OneDrive\Desktop\dependency_whiteboard.JPG
+		..\..\..\OneDrive\Desktop\formula_whiteboard.JPG = ..\..\..\OneDrive\Desktop\formula_whiteboard.JPG
+		..\..\..\OneDrive\Desktop\spreadsheet_whiteboard.JPG = ..\..\..\OneDrive\Desktop\spreadsheet_whiteboard.JPG
 	EndProjectSection
 EndProject
 Global
