@@ -126,7 +126,7 @@ namespace SS
                 // Either update the existing cell or add a new one with the text content
                 cells[name] = new Cell(text);
 
-                // If the cell is being updated from a non-text value to text, clear its dependents
+                // If the cell is being updated from a non-text value to text clear its dependents
                 if (cellPreviouslyExisted)
                 {
                     dependencies.ReplaceDependents(name, new HashSet<string>());
