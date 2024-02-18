@@ -59,6 +59,81 @@ namespace SpreadsheetTests
 
 
 
+
+
+
+
+
+
+
+
+
+        [TestMethod]
+        public void ChangeInCellAffectsDirectAndIndirectDependents()
+        {
+            // Arrange
+            var ss = new Spreadsheet();
+            ss.SetContentsOfCell("A1", "2"); // Direct value
+            ss.SetContentsOfCell("B1", "=A1 * 2"); // Depends on A1
+            ss.SetContentsOfCell("C1", "=B1 + 3"); // Depends on B1
+
+            // Act
+            // Assuming SetContentsOfCell internally uses GetAffectedCells to determine which cells to recalculate or mark as affected
+            ss.SetContentsOfCell("A1", "3"); // Change that should affect B1 and C1
+
+            // Assert
+            // Verify that B1 and C1's values are as expected after the change in A1
+            // This assumes you have a method to retrieve calculated values for cells, demonstrating the indirect effect of the change
+            Assert.AreEqual(6.0, ss.GetCellValue("B1")); // B1 should now be 3 * 2
+            Assert.AreEqual(9.0, ss.GetCellValue("C1")); // C1 should now be 6 + 3
+
+            // Additional logic to verify that B1 and C1 were indeed recalculated might be necessary,
+            // depending on the capabilities and design of your Spreadsheet class.
+        }
+
+        [TestMethod]
+        public void GetCellValue_FormulaEvaluatesSuccessfully_ReturnsCorrectValue()
+        {
+            // Arrange
+            var ss = new TestableSpreadsheet();
+            ss.SetContentsOfCell("A1", "2"); // Set a cell value for reference in the formula
+            ss.SetContentsOfCell("B1", "=A1 * 2"); // Formula that should evaluate to 4
+
+            // Act
+            var result = ss.GetCellValue("B1");
+
+            // Assert
+            Assert.AreEqual(4.0, result); // Assuming Evaluate correctly computes the formula
+        }
+
+        [TestMethod]
+        public void GetCellValue_FormulaEvaluationFails_ReturnsFormulaError()
+        {
+            // Arrange
+            var ss = new TestableSpreadsheet();
+            ss.SetContentsOfCell("B1", "=1 / 0"); // Formula that should cause an exception (division by zero)
+
+            // Act
+            var result = ss.GetCellValue("B1");
+
+            // Assert
+            Assert.IsInstanceOfType(result, typeof(SpreadsheetUtilities.FormulaError)); // Verify that a FormulaError is returned
+            // Optionally, check the message of the FormulaError if needed
+        }
+
+        [TestMethod]
+        public void GetCellValue_CellIsEmpty_ReturnsEmptyString()
+        {
+            // Arrange
+            var ss = new TestableSpreadsheet();
+
+            // Act
+            var result = ss.GetCellValue("C1"); // Assuming C1 is not set and should be considered empty
+
+            // Assert
+            Assert.AreEqual("", result); // Verify that an empty string is returned for an uninitialized cell
+        }
+
         [TestMethod]
         public void GetXml_CellWithStringContent_ProducesCorrectXml()
         {
@@ -194,15 +269,15 @@ namespace SpreadsheetTests
             Assert.AreEqual("", result);
         }
 
-        //[TestMethod]
-        //public void GetCellValue_CellWithDouble_ReturnsDouble()
-        //{
-        //    var ss = new Spreadsheet();
-        //    double value = 2.5;
-        //    ss.SetCellContents("A1", value);
-        //    var result = ss.GetCellValue("A1");
-        //    Assert.AreEqual(2.5, result);
-        //}
+        [TestMethod]
+        public void GetCellValue_CellWithDouble_ReturnsDouble()
+        {
+            var ss = new TestableSpreadsheet();
+            double value = 2.5;
+            ss.TestSetCellContents("A1", value);
+            var result = ss.GetCellValue("A1");
+            Assert.AreEqual(2.5, result);
+        }
 
         [TestMethod]
         public void GetCellValue_CellWithString_ReturnsString()
@@ -277,34 +352,6 @@ namespace SpreadsheetTests
 
             // Assert is handled by ExpectedException
         }
-
-
-    
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
