@@ -316,29 +316,35 @@ namespace SS
 
         public override IList<string> SetContentsOfCell(string name, string content)
         {
+           //Invalid name, throw exceptionn
             if (!IsValidName(name))
             {
                 throw new InvalidNameException();
             }
             double number;
            
+            //Parse the content, put result if number, to number
             if(double.TryParse(content, out number))
             {
+               //setcells using name and number
                 var affectedCells = SetCellContents(name, number);
                 return affectedCells.ToList();
 
             }
            
+            //string starts with equal sign, ie formula
             else if (content.StartsWith("="))
             {
+               //Get the formula information past the equal sign
                 string formulaString = content.Substring(1);
                 try
                 {
+                   //Set the formula to a new string, and set the cell to the content
                     Formula formula = new Formula(formulaString);
                     var affectedCells = SetCellContents(name, formula);
                     return affectedCells.ToList();
                 }
-                catch
+                catch //catch any exception and throw it
                 {
                     throw;
                 }
@@ -356,17 +362,21 @@ namespace SS
         {
             try
             {
+                //Make xmlDoc and load it using filename
                 XmlDocument xmlDoc = new XmlDocument();
                 xmlDoc.Load(filename);
 
-                // Assuming the version is an attribute of the spreadsheet element
+                // the version is an attribute of the spreadsheet element
                 XmlAttribute versionAttribute = xmlDoc.DocumentElement.Attributes["version"];
+                
+                //If version is null
                 if (versionAttribute == null)
                 {
                     throw new SpreadsheetReadWriteException("Version information not found in file");
                 }
                 return versionAttribute.Value;
-            }
+            } 
+            //Catch exceptions and throw new spreadsheetreadwriteexception
             catch (XmlException ex)
             {
                 throw new SpreadsheetReadWriteException("An error occurred while reading the file: " + ex.Message);
