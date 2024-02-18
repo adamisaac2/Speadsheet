@@ -2,6 +2,7 @@ using SS;
 using SpreadsheetUtilities;
 using static SS.Spreadsheet;
 using System.Xml;
+using System.Xml.Linq;
 
 /// <summary>
 /// Author:   Adam Isaac
@@ -58,7 +59,43 @@ namespace SpreadsheetTests
 
 
 
+        [TestMethod]
+        public void GetXml_CellWithStringContent_ProducesCorrectXml()
+        {
+            // Arrange
+            var ss = new TestableSpreadsheet(); // Assuming TestableSpreadsheet exposes GetXML publicly
+            ss.SetContentsOfCell("A1", "Hello World");
 
+            // Act
+            string xmlOutput = ss.GetXML();
+            XElement xml = XElement.Parse(xmlOutput);
+
+            // Assert
+            var cell = xml.Element("cell");
+            Assert.IsNotNull(cell);
+            Assert.AreEqual("A1", cell.Element("name").Value);
+            Assert.AreEqual("Hello World", cell.Element("content").Value);
+            Assert.AreEqual("String", cell.Element("type").Value);
+        }
+
+        [TestMethod]
+        public void GetXml_CellWithFormulaContent_ProducesCorrectXml()
+        {
+            // Arrange
+            var ss = new TestableSpreadsheet(); // Assuming TestableSpreadsheet exposes GetXML publicly
+            ss.SetContentsOfCell("B1", "=A1+2");
+
+            // Act
+            string xmlOutput = ss.GetXML();
+            XElement xml = XElement.Parse(xmlOutput);
+
+            // Assert
+            var cell = xml.Element("cell");
+            Assert.IsNotNull(cell);
+            Assert.AreEqual("B1", cell.Element("name").Value);
+            Assert.AreEqual("=A1+2", cell.Element("content").Value);
+            Assert.AreEqual("Formula", cell.Element("type").Value);
+        }
 
         [TestMethod]
         [ExpectedException(typeof(SpreadsheetReadWriteException))]
