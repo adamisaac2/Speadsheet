@@ -60,7 +60,23 @@ namespace SpreadsheetTests
 
 
 
+        [TestMethod]
+        [ExpectedException(typeof(SpreadsheetReadWriteException))]
+        public void GetSavedVersion_InvalidXmlContent_ThrowsSpreadsheetReadWriteException()
+        {
+            // Arrange
+            var ss = new Spreadsheet();
+            var filename = Path.Combine(_testDirectory, "InvalidXml.xml");
 
+            // Create an XML file with invalid content
+            string invalidXmlContent = "<spreadsheet><unclosedTag></spreadsheet>";
+            File.WriteAllText(filename, invalidXmlContent);
+
+            // Act
+            ss.GetSavedVersion(filename);
+
+            // The ExpectedException attribute should handle the assertion
+        }
 
         [TestMethod]
         [ExpectedException(typeof(SpreadsheetReadWriteException))]
