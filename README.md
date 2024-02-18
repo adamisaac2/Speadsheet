@@ -19,7 +19,8 @@ getting variables to correctly work with parenthesis. -- Update A3 -- While the 
 updated the mathematical side of it, so that the spreadsheet(when implemented) can actually evaluate full functions using PEMDAS without
 completely being wrong. It can now evaluate expressions correctly. --Update A4 -- Spreadsheet can now use cell functionality and can use
 information from other cells in the spreadsheet. While the GUI is not set up yet, everything seems to be getting better and better in terms
-of functionality. 
+of functionality. --Update A5 -- Spreadsheet now uses XML docs and can save data to xml doc. Also changed a few protection levels on methods 
+that were previously public, now set to protected. 
 
 # Time Expenditures:
 
@@ -34,6 +35,9 @@ of functionality.
 
     1. Spreadsheet: Predicted Hours: 10 Actual Hours : 10
     2. SpreadsheetTests: Predicted Hours: 3 Actual Hours: 3
+
+    1. Spreadsheet A5: Predicted Hours: 10 Actual Hours: 11
+    2. SpreadsheetTests A5: Predicted Hours: 2 Actual Hours : 3.5
 
     Time Breakdown Assignment 1 - 
     My first day working on this, I spent about 4 or 5 hours just writing all the base code without debugging
@@ -63,3 +67,12 @@ of functionality.
     in my SetCellContents for the string and double. Which caused a bug that took me a while to figure out because I had thought it was in 
     a different method. Besides that I would say that everything went well. My coverage is as 97 percent and I had made more then a few tests 
     that cover edge cases, so I think I will be good for grading on this assingmnet. 
+
+    Time Breakdown Assingment 5 - 
+    I really spent a good amount of time revising the old methods that got changed, idk why it was so hard for me but I felt like I struggled 
+    a little bit lol. After that I had a pretty good time on implementing the new methods that contained the XML stuff. I had a feeling it wasnt
+    gonna take me THAT long, and I was right I think it took me around like 10 hours including bug fixing which I personally dont think is that bad
+    for me. And I think ima pretty shit programmer lol. Good thing I like doing it lol. My coverage is 95.5 percent which is weird because my last
+    test that I made, I checked before running it and I was at 95.5 percent, then ran it and it was still at 95.5 percent except the lines that were
+    red before, were green which means my test covered the previously red lines and my test coverage didnt go up, which means other lines that were green
+    before, turned red. So idfk whats going on ig. 
