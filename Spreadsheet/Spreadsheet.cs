@@ -404,24 +404,23 @@ namespace SS
                 XmlDocument xmlDoc = new XmlDocument();
                 xmlDoc.Load(filename);
 
-                XmlNode versionNode = xmlDoc.SelectSingleNode("//version");
-
-                if (versionNode != null)
+                // Assuming the version is an attribute of the spreadsheet element
+                XmlAttribute versionAttribute = xmlDoc.DocumentElement.Attributes["version"];
+                if (versionAttribute == null)
                 {
-                    XmlAttribute versionAttribute = xmlDoc.DocumentElement.Attributes["version"];
-                    if (versionAttribute == null)
-                    {
-                        throw new SpreadsheetReadWriteException("Version information not found in file");
-                    }
-                    return versionAttribute.Value;
+                    throw new SpreadsheetReadWriteException("Version information not found in file");
                 }
-                return versionNode.InnerText;
+                return versionAttribute.Value;
             }
-            catch (Exception ex) when (ex is XmlException || ex is IOException)
+            catch (XmlException ex)
             {
-                throw new SpreadsheetReadWriteException("An error occured while reading the file " + ex.Message);
+                throw new SpreadsheetReadWriteException("An error occurred while reading the file: " + ex.Message);
             }
-            
+            catch (IOException ex)
+            {
+                throw new SpreadsheetReadWriteException("An error occurred while reading the file: " + ex.Message);
+            }
+
         }
 
         public override void Save(string filename)
