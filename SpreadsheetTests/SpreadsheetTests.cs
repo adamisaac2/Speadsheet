@@ -148,7 +148,7 @@ namespace SpreadsheetTests
             // Verify that the Spreadsheet object is initialized with the correct properties
             Assert.AreEqual(version, ss.Version);
             // Assuming you store the path or have a related property to indicate readiness to load
-            // Assert.AreEqual(pathToFile, ss.PathToFile); // Uncomment or modify based on your actual implementation
+            // Assert.AreEqual(pathToFile, ss.PathToFile); 
 
             // As file loading isn't implemented, other tests would be speculative
             // Future tests should verify file loading and parsing once implemented
@@ -184,17 +184,15 @@ namespace SpreadsheetTests
             ss.SetContentsOfCell("C1", "=B1 + 3"); // Depends on B1
 
             // Act
-            // Assuming SetContentsOfCell internally uses GetAffectedCells to determine which cells to recalculate or mark as affected
+
             ss.SetContentsOfCell("A1", "3"); // Change that should affect B1 and C1
 
             // Assert
             // Verify that B1 and C1's values are as expected after the change in A1
-            // This assumes you have a method to retrieve calculated values for cells, demonstrating the indirect effect of the change
+
             Assert.AreEqual(6.0, ss.GetCellValue("B1")); // B1 should now be 3 * 2
             Assert.AreEqual(9.0, ss.GetCellValue("C1")); // C1 should now be 6 + 3
 
-            // Additional logic to verify that B1 and C1 were indeed recalculated might be necessary,
-            // depending on the capabilities and design of your Spreadsheet class.
         }
 
         [TestMethod]
