@@ -49,6 +49,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Whiteboard", "Whiteboard", 
 		..\..\..\OneDrive\Desktop\spreadsheet_whiteboard.JPG = ..\..\..\OneDrive\Desktop\spreadsheet_whiteboard.JPG
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GUI", "GUI\GUI.csproj", "{279394F1-045D-4E01-8740-4F7611B9D2BE}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -87,6 +89,12 @@ Global
 		{BA4435F9-39FB-4296-AD1E-753C1CE03E2D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BA4435F9-39FB-4296-AD1E-753C1CE03E2D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{BA4435F9-39FB-4296-AD1E-753C1CE03E2D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{279394F1-045D-4E01-8740-4F7611B9D2BE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{279394F1-045D-4E01-8740-4F7611B9D2BE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{279394F1-045D-4E01-8740-4F7611B9D2BE}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
+		{279394F1-045D-4E01-8740-4F7611B9D2BE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{279394F1-045D-4E01-8740-4F7611B9D2BE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{279394F1-045D-4E01-8740-4F7611B9D2BE}.Release|Any CPU.Deploy.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
