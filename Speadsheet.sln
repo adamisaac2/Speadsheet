@@ -9,11 +9,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FormulaEvaluatorTester", "F
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{DB3E6105-1DB8-43FA-8CD2-137E9A4536A3}"
 	ProjectSection(SolutionItems) = preProject
-		..\..\..\OneDrive\Desktop\architecture.JPG = ..\..\..\OneDrive\Desktop\architecture.JPG
-		..\..\..\OneDrive\Desktop\dependency_whiteboard.JPG = ..\..\..\OneDrive\Desktop\dependency_whiteboard.JPG
-		..\..\..\OneDrive\Desktop\formula_whiteboard.JPG = ..\..\..\OneDrive\Desktop\formula_whiteboard.JPG
+		Spreadsheet\Whiteboard\architecture.JPG = Spreadsheet\Whiteboard\architecture.JPG
+		Spreadsheet\Whiteboard\dependency_whiteboard.JPG = Spreadsheet\Whiteboard\dependency_whiteboard.JPG
+		Spreadsheet\Whiteboard\formula_whiteboard.JPG = Spreadsheet\Whiteboard\formula_whiteboard.JPG
 		README.md = README.md
-		..\..\..\OneDrive\Desktop\spreadsheet_whiteboard.JPG = ..\..\..\OneDrive\Desktop\spreadsheet_whiteboard.JPG
+		Spreadsheet\Whiteboard\spreadsheet_whiteboard.JPG = Spreadsheet\Whiteboard\spreadsheet_whiteboard.JPG
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DependencyGraph", "DependencyGraph\DependencyGraph.csproj", "{F9D87A4D-5138-4CC9-A12A-AC09BC58930A}"
@@ -49,7 +49,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Whiteboard", "Whiteboard", 
 		..\..\..\OneDrive\Desktop\spreadsheet_whiteboard.JPG = ..\..\..\OneDrive\Desktop\spreadsheet_whiteboard.JPG
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GUI", "GUI\GUI.csproj", "{279394F1-045D-4E01-8740-4F7611B9D2BE}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GUI", "GUI\GUI.csproj", "{279394F1-045D-4E01-8740-4F7611B9D2BE}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
