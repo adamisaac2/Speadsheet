@@ -4,12 +4,60 @@
     {
         int count = 0;
         int NumOfColumns = 10;
-
+        int NumOfRows = 10;
         public MainPage()
         {
             InitializeComponent();
             PopulateTopLabel();
+            PopulateRowCountColumn();
         }
+  
+        private View CreateRowCountHead()
+        {
+            return new Label
+            {
+                Text = "#",
+                BackgroundColor = Color.FromRgb(200, 200, 250),
+                HorizontalTextAlignment = TextAlignment.Center
+            };
+        }
+
+        private void PopulateRowCountColumn()
+        {
+            for (int i = 1; i <= NumOfRows; i++)
+            {
+                var label = new Label
+                {
+                    Text = i.ToString(),
+                    BackgroundColor = Color.FromRgb(200, 200, 200), // Choose appropriate background color
+                    HorizontalTextAlignment = TextAlignment.Center
+                };
+
+                // Assuming you have a layout (e.g., a Grid or StackLayout) for row numbers
+                // Replace 'RowNumbersLayout' with the actual name of your layout
+                LeftLabels.Children.Add(label);
+            }
+        }
+
+        private Border CreateColumnHeader(string label)
+        {
+            return new Border
+            {
+                Stroke = Color.FromRgb(0, 0, 0),
+                StrokeThickness = 1,
+                HeightRequest = 20,
+                WidthRequest = 75,
+                HorizontalOptions = LayoutOptions.Center,
+                Content = new Label
+                {
+                    Text = label,
+                    BackgroundColor = Color.FromRgb(200, 200, 250),
+                    HorizontalTextAlignment = TextAlignment.Center
+                }
+            };
+        }
+
+
 
         private void PopulateTopLabel()
         {

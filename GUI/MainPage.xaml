@@ -42,6 +42,11 @@
             </ScrollView>
         </VerticalStackLayout>
 
+        <ScrollView x:Name="SpreadsheetScrollView" Orientation="Both">
+            <Grid x:Name="SpreadsheetGrid" />
+        </ScrollView>
+
+
         <!-- Your existing ScrollView with the secondary content goes here -->
         <ScrollView>
             <VerticalStackLayout
