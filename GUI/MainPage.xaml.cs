@@ -8,6 +8,8 @@ namespace GUI
         int NumColumns = 10;
         int NumRows = 10;
         private SS.Spreadsheet spreadsheet;
+        Color highlightColor = Color.FromRgba("#FF87CEFA");
+        Color normalColor = Color.FromRgba("#FFFFFFFF");
         
 
         public MainPage()
@@ -67,6 +69,9 @@ namespace GUI
                     };
                     cell.TextChanged += Cell_TextChanged;
                     cell.Completed += OnCellCompleted;
+                    cell.Focused += OnCellFocused;
+                    cell.Unfocused += OnCellUnfocused;
+
                     Grid.SetColumn(cell, col);
                     Grid.SetRow(cell, row);
 
@@ -104,6 +109,24 @@ namespace GUI
                     // Handle exceptions such as invalid formulas or circular dependencies
                     DisplayAlert("Error", ex.Message, "OK");
                 }
+            }
+        }
+
+        private void OnCellFocused(object sender, FocusEventArgs e)
+        {
+            var entry = sender as Entry;
+            if (entry != null)
+            {
+                entry.BackgroundColor = highlightColor; // Highlight the cell
+            }
+        }
+
+        private void OnCellUnfocused(object sender, FocusEventArgs e)
+        {
+            var entry = sender as Entry;
+            if (entry != null)
+            {
+                entry.BackgroundColor = normalColor; // Revert to normal background color
             }
         }
 
