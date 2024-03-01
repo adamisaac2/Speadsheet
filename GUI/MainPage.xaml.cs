@@ -53,6 +53,7 @@
                     var cell = new Entry
                     {
                         Placeholder = "",
+                        TextColor = Color.FromRgb(0, 0, 0),
                         HeightRequest = 50,
                         WidthRequest = 75,
                         BackgroundColor = Color.FromRgb(255, 255, 255),
@@ -68,7 +69,7 @@
                 }
             }
         }
-        //a
+        //aa
         private Dictionary<(int, int), string> cellValues = new Dictionary<(int, int), string>();
         void Cell_TextChanged(object sender, TextChangedEventArgs e)
         {
@@ -190,8 +191,25 @@
             }
         }
 
-        void FileMenuNew(object sender, EventArgs e) { 
-        
+        void FileMenuNew(object sender, EventArgs e) {
+            // Step 1: Clear existing data
+            // If you're using a data structure to store cell values, clear it
+            cellValues.Clear(); // Assuming 'cellValues' is your data storage, like a Dictionary
+
+            // Step 2: Reset the Grid
+            // Clear existing children (cells) from the grid
+            SpreadsheetGrid.Children.Clear();
+
+            // Optionally, clear and redefine rows and columns if the new spreadsheet
+            // should have a different structure from the existing one
+            SpreadsheetGrid.RowDefinitions.Clear();
+            SpreadsheetGrid.ColumnDefinitions.Clear();
+            InitializeSpreadsheetGrid(); // Assuming this method sets up your grid's rows and columns
+
+            // Repopulate the row headers if necessary
+           // PopulateRowCountColumn();
+
+          
         }
 
         private void OnCounterClicked(object sender, EventArgs e)
