@@ -26,25 +26,23 @@
             </Border>
 
             <!-- the column headers: A, B, C, ... -->
-            <HorizontalStackLayout x:Name="TopLabels" BackgroundColor="LightBlue"/>
+            <HorizontalStackLayout x:Name="TopLabels" BackgroundColor="LightBlue" Margin="28, 0, 0, 0"/>
 
-            <!-- the Grid of Spreadsheet GUI Cells -->
-            <ScrollView
-                        x:Name="Table"
+            <!-- Grid of Spreadsheet GUI Cells -->
+            <ScrollView x:Name="Table"
                         Orientation="Both"
                         HorizontalOptions="FillAndExpand"
                         HorizontalScrollBarVisibility="Always"
                         HeightRequest="500">
                 <HorizontalStackLayout>
-                    <VerticalStackLayout x:Name="LeftLabels"  BackgroundColor="LightBlue"></VerticalStackLayout>
-                    <VerticalStackLayout x:Name="Grid"        BackgroundColor="LightGoldenrodYellow"></VerticalStackLayout>
+                    <VerticalStackLayout x:Name="LeftLabels" BackgroundColor="LightBlue" />
+                    <!-- Actual Spreadsheet Grid inside the ScrollView -->
+                    <Grid x:Name="SpreadsheetGrid" BackgroundColor="LightGoldenrodYellow">
+                        <!-- Grid's RowDefinitions and ColumnDefinitions can be defined here or in code-behind -->
+                    </Grid>
                 </HorizontalStackLayout>
             </ScrollView>
         </VerticalStackLayout>
-
-        <ScrollView x:Name="SpreadsheetScrollView" Orientation="Both">
-            <Grid x:Name="SpreadsheetGrid" />
-        </ScrollView>
 
 
         <!-- Your existing ScrollView with the secondary content goes here -->
