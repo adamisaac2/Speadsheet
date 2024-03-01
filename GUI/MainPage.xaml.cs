@@ -66,6 +66,7 @@ namespace GUI
                         VerticalOptions = LayoutOptions.FillAndExpand
                     };
                     cell.TextChanged += Cell_TextChanged;
+                    cell.Completed += OnCellCompleted;
                     Grid.SetColumn(cell, col);
                     Grid.SetRow(cell, row);
 
@@ -76,7 +77,36 @@ namespace GUI
         }
         //aa
         private Dictionary<(int, int), string> cellValues = new Dictionary<(int, int), string>();
-        
+
+        private void OnCellCompleted(object sender, EventArgs e)
+        {
+            var entry = sender as Entry;
+            if (entry != null)
+            {
+                string cellName = GetCellNameFromEntry(entry); // Implement this method as shown previously
+                string content = entry.Text;
+
+                // Update the cell's content in the spreadsheet logic
+                try
+                {
+                    // Assuming SetContentsOfCell handles formula evaluation internally
+                    spreadsheet.SetContentsOfCell(cellName, content);
+
+                    // Optionally, directly display the evaluated value if it's a formula
+                    if (content.StartsWith("="))
+                    {
+                        var value = spreadsheet.GetCellValue(cellName); // This should handle formula evaluation
+                        entry.Text = value.ToString(); // Display the evaluated value or error
+                    }
+                }
+                catch (Exception ex)
+                {
+                    // Handle exceptions such as invalid formulas or circular dependencies
+                    DisplayAlert("Error", ex.Message, "OK");
+                }
+            }
+        }
+
         void Cell_TextChanged(object sender, TextChangedEventArgs e)
         {
             var entry = sender as Entry;
