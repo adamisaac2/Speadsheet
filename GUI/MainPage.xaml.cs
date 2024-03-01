@@ -48,11 +48,12 @@
                     Grid.SetColumn(cellBorder, col);
                     SpreadsheetGrid.Children.Add(cellBorder);
 
+                    var cellIdentifier = GetCellIdentifier(row, col);
 
 
                     var cell = new Entry
                     {
-                        Placeholder = "",
+                        Placeholder = cellIdentifier,
                         TextColor = Color.FromRgb(0, 0, 0),
                         HeightRequest = 50,
                         WidthRequest = 75,
@@ -166,6 +167,13 @@
                 TopLabels.Children.Add(border);
             }
 
+        }
+        string GetCellIdentifier(int row, int column)
+        {
+            // Convert column number to letter(s)
+            string columnLetter = ColumnNumberToName(column);
+            // Combine with row number (add 1 because rows are typically 1-indexed in spreadsheets)
+            return $"{columnLetter}{row + 1}";
         }
 
         string ColumnNumberToName(int columnNumber)
