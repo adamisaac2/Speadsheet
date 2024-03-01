@@ -1,11 +1,13 @@
-﻿namespace GUI
+﻿using SpreadsheetUtilities;
+
+namespace GUI
 {
     public partial class MainPage : ContentPage
     {
         int count = 0;
         int NumColumns = 10;
         int NumRows = 10;
-
+        private SS.Spreadsheet spreadsheet;
         
 
         public MainPage()
@@ -15,6 +17,8 @@
             PopulateRowCountColumn();
             InitializeSpreadsheetGrid();
             PopulateSpreadsheetCells();
+            spreadsheet = new SS.Spreadsheet();
+           
         }
 
         private void InitializeSpreadsheetGrid()
@@ -72,6 +76,7 @@
         }
         //aa
         private Dictionary<(int, int), string> cellValues = new Dictionary<(int, int), string>();
+        
         void Cell_TextChanged(object sender, TextChangedEventArgs e)
         {
             var entry = sender as Entry;
@@ -81,6 +86,34 @@
             cellValues[key] = entry.Text; 
         }
 
+        private void OnCellTextChanged(object sender, TextChangedEventArgs e)
+        {
+            var entry = sender as Entry;
+            if (entry != null)
+            {
+                // Assuming you have a way to determine the cell's name (e.g., "A1") based on the Entry control
+                string cellName = GetCellNameFromEntry(entry);
+                string content = entry.Text;
+
+                // Update the cell's content in the spreadsheet
+                try
+                {
+                    spreadsheet.SetContentsOfCell(cellName, content);
+
+                    // If the content is a formula, evaluate it and update the UI accordingly
+                    if (content.StartsWith("="))
+                    {
+                        var value = spreadsheet.GetCellValue(cellName);
+                        entry.Text = value.ToString(); // Display the evaluated value or handle errors if value is FormulaError
+                    }
+                }
+                catch (Exception ex)
+                {
+                    // Handle exceptions, such as invalid formulas or circular dependencies
+                    DisplayAlert("Error", ex.Message, "OK");
+                }
+            }
+        }
 
         private View CreateRowCountHead()
         {
@@ -168,6 +201,15 @@
             }
 
         }
+
+        private string GetCellNameFromEntry(Entry entry)
+        {
+            int row = Grid.GetRow(entry);
+            int column = Grid.GetColumn(entry);
+            string cellName = ColumnNumberToName(column) + (row + 1).ToString();
+            return cellName;
+        }
+
         string GetCellIdentifier(int row, int column)
         {
             // Convert column number to letter(s)
@@ -220,6 +262,11 @@
           
         }
 
+        void OnCellInput(string input, string cellReference)
+        {
+
+        }
+
         private void OnCounterClicked(object sender, EventArgs e)
         {
             count++;
@@ -231,6 +278,20 @@
 
             SemanticScreenReader.Announce(CounterBtn.Text);
         }
+        bool IsFormula(string input)
+        {
+            return !string.IsNullOrEmpty(input) && input.StartsWith("=");
+        }
+
+        string ExtractFormula(string input)
+        {
+            input.Trim();
+            return input.Substring(1); // Remove the leading "="
+        }
+
+
+
+
     }
 
 }
