@@ -366,6 +366,8 @@ namespace GUI
 
         void FileMenuNew(object sender, EventArgs e) {
             // Step 1: Clear existing data
+
+            spreadsheet.Clear();
             ClearAllCells(); // Assuming 'cellValues' is your data storage, like a Dictionary
 
             // Step 2: Reset the Grid
@@ -378,10 +380,11 @@ namespace GUI
             SpreadsheetGrid.ColumnDefinitions.Clear();
             InitializeSpreadsheetGrid(); // Assuming this method sets up your grid's rows and columns
             PopulateSpreadsheetCells();
-            // Repopulate the row headers if necessary
-           // PopulateRowCountColumn();
 
-          
+            SelectedCellNameLabel.Text = string.Empty;
+            SelectedCellValueLabel.Text = string.Empty;
+            SelectedCellContentsEntry.Text = string.Empty;
+
         }
 
         private async void FileMenuSave(object sender, EventArgs e)

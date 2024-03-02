@@ -575,6 +575,12 @@ namespace SS
             }
         }
 
+        public void Clear()
+        {
+            cells.Clear();
+            dependencies.Clear();
+        }
+
         private string NormalizeCellName(string cellName)
         {
             if (string.IsNullOrWhiteSpace(cellName))
