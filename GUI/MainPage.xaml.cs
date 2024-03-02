@@ -1,5 +1,6 @@
 ﻿using SpreadsheetUtilities;
 using System.Text.Json;
+using Microsoft.Maui.Controls;
 
 namespace GUI
 {
@@ -21,6 +22,7 @@ namespace GUI
             PopulateRowCountColumn();
             InitializeSpreadsheetGrid();
             PopulateSpreadsheetCells();
+            InitializeWidgets();
             spreadsheet = new SS.Spreadsheet();
             graph = new DependencyGraph();
            
@@ -71,7 +73,18 @@ namespace GUI
                 }
             };
         }
+        private View CreateRowCountHead()
+        {
+            return new Label
+            {
+                Text = "#",
+                BackgroundColor = Color.FromRgb(200, 200, 250),
+                HorizontalTextAlignment = TextAlignment.Center
+            };
+        }
 
+/***************************************************************************************************************************************/
+        
         private void InitializeSpreadsheetGrid()
         {
             for (int i = 0; i < NumColumns; i++)
@@ -228,22 +241,82 @@ namespace GUI
             var entry = sender as Entry;
             if (entry != null && !string.IsNullOrEmpty(SelectedCellNameLabel.Text))
             {
-                // Update the spreadsheet with the new content
-                spreadsheet.SetContentsOfCell(SelectedCellNameLabel.Text, entry.Text);
+                string normalizedCellName = NormalizeCellName(SelectedCellNameLabel.Text);
 
-                // You may need to refresh the cell value label and possibly other parts of your UI
+                // Update the spreadsheet with the new content
+                spreadsheet.SetContentsOfCell(normalizedCellName, entry.Text);
+
+               
                 object cellValue = spreadsheet.GetCellValue(SelectedCellNameLabel.Text);
-                SelectedCellValueLabel.Text = cellValue?.ToString() ?? "";
+                SelectedCellValueLabel.Text = cellValue?.ToString() ?? "#ERROR";
+                    
+                
             }
         }
+        private void UpdateCellValueDisplay(string cellName)
+        {
+            // Assuming you have a method to retrieve the cell Entry control from the cell name
+            var cellEntry = GetCellEntryFromName(cellName);
+            if (cellEntry != null)
+            {
+                object value = spreadsheet.GetCellValue(cellName);
 
+                // Check if it's a formula error
+                if (value is SpreadsheetUtilities.FormulaError error)
+                {
+                    cellEntry.Text = error.Reason; // Or however you want to display errors
+                }
+                else
+                {
+                    cellEntry.Text = value.ToString();
+                }
+            }
+        }
+        private Entry GetCellEntryFromName(string cellName)
+        {
+            // Parse the cell name into column and row parts
+            int column = ColumnNameToNumber(cellName.Substring(0, 1)); // Convert column letter to 0-based index
+            int row = int.Parse(cellName.Substring(1)) - 1; // Convert the rest to 0-based row index
 
+            foreach (var child in SpreadsheetGrid.Children)
+            {
+                if (child is View viewChild)
+                {
+                    int rowIndex = Grid.GetRow(viewChild);
+                    int columnIndex = Grid.GetColumn(viewChild);
+
+                    // Check if the child's row and column match the desired cell
+                    if (rowIndex == row && columnIndex == column)
+                    {
+                        // Return the view cast to Entry, if it is an Entry
+                        return viewChild as Entry;
+                    }
+                }
+            }
+
+            // If no matching cell is found, return null
+            return null;
+        }
         private string GetCellNameFromEntry(Entry entry)
         {
             int row = Grid.GetRow(entry);
             int column = Grid.GetColumn(entry);
             string cellName = ColumnNumberToName(column) + (row + 1).ToString();
             return cellName;
+        }
+        public int ColumnNameToNumber(string columnName)
+        {
+            // Ensure the column name is in uppercase.
+            columnName = columnName.ToUpper();
+
+            // Check if the column name length is 1 and it is within A to Z
+            if (columnName.Length == 1 && columnName[0] >= 'A' && columnName[0] <= 'Z')
+            {
+                // Convert the letter to its corresponding number (0-based)
+                return columnName[0] - 'A';
+            }
+
+            throw new ArgumentException("Invalid column name.");
         }
 
         private void OnCellFocused(object sender, FocusEventArgs e)
@@ -252,6 +325,19 @@ namespace GUI
             if (entry != null)
             {
                 entry.BackgroundColor = highlightColor; // Highlight the cell
+
+                string cellName = GetCellNameFromEntry(entry); // This method should extract the cell name from the Entry
+                string normalizedCellName = NormalizeCellName(cellName); // Normalize the cell name if necessary
+
+                // Update the cell name label
+                SelectedCellNameLabel.Text = cellName;
+
+                // Update the cell value label
+                object cellValue = spreadsheet.GetCellValue(normalizedCellName);
+                SelectedCellValueLabel.Text = cellValue?.ToString() ?? "";
+
+                // Set the Entry text to the cell's content, allowing it to be edited
+                SelectedCellContentsEntry.Text = spreadsheet.GetCellContents(normalizedCellName)?.ToString() ?? "";
             }
         }
 
@@ -301,16 +387,6 @@ namespace GUI
                     DisplayAlert("Error", ex.Message, "OK");
                 }
             }
-        }
-
-        private View CreateRowCountHead()
-        {
-            return new Label
-            {
-                Text = "#",
-                BackgroundColor = Color.FromRgb(200, 200, 250),
-                HorizontalTextAlignment = TextAlignment.Center
-            };
         }
         string GetCellIdentifier(int row, int column)
         {
@@ -363,29 +439,77 @@ namespace GUI
                 await DisplayAlert("Error", $"Failed to read data: {ex.Message}", "OK");
             }
         }
-
-        void FileMenuNew(object sender, EventArgs e) {
+       void CreateNewSpreadsheet()
+       {
             // Step 1: Clear existing data
 
             spreadsheet.Clear();
-            ClearAllCells(); // Assuming 'cellValues' is your data storage, like a Dictionary
+            ClearAllCells();
 
             // Step 2: Reset the Grid
             // Clear existing children (cells) from the grid
             SpreadsheetGrid.Children.Clear();
-
-            // Optionally, clear and redefine rows and columns if the new spreadsheet
-            // should have a different structure from the existing one
             SpreadsheetGrid.RowDefinitions.Clear();
             SpreadsheetGrid.ColumnDefinitions.Clear();
+
+            //Step 3: Initialize grid and cells.
             InitializeSpreadsheetGrid(); // Assuming this method sets up your grid's rows and columns
             PopulateSpreadsheetCells();
 
             SelectedCellNameLabel.Text = string.Empty;
             SelectedCellValueLabel.Text = string.Empty;
             SelectedCellContentsEntry.Text = string.Empty;
+       }
+        async Task SaveSpreadsheet()
+        {
+            string fileName = "MySpreadsheet.sprd";
+            string filePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), fileName);
+
+            try
+            {
+                var saveData = new Dictionary<string, object>(); // Prepare data to save
+
+                foreach (var cellName in spreadsheet.GetNamesOfAllNonemptyCells())
+                {
+                    saveData[cellName] = spreadsheet.GetCellValue(cellName);
+                }
+
+                var json = JsonSerializer.Serialize(saveData);
+                await File.WriteAllTextAsync(filePath, json);
+
+                await DisplayAlert("Save", "Data saved successfully.\nThe file has been saved to documents folder.", "OK");
+
+                spreadsheet.MarkAsSaved();
+            }
+            catch (Exception ex)
+            {
+                await DisplayAlert("Error", $"Failed to save data: {ex.Message}", "OK");
+            }
+        }
+       async void FileMenuNew(object sender, EventArgs e) {
+           
+            if (spreadsheet.HasUnsavedChanges)
+            {
+                bool saveChanges = await DisplayAlert(
+                    "Unsaved Changes",
+                    "You have unsaved changes. Would you like to save them before creating a new spreadsheet?",
+                    "Save",
+                    "Don't Save"
+                );
+
+                if (saveChanges)
+                {
+                    // Call your save method
+                    await SaveSpreadsheet();
+                }
+            }
+
+            // Continue with creating a new spreadsheet...
+            CreateNewSpreadsheet();
 
         }
+
+
 
         private async void FileMenuSave(object sender, EventArgs e)
         {
@@ -415,9 +539,9 @@ namespace GUI
 
         public void ClearAllCells()
         {
-            cellValues.Clear(); // Assuming 'cells' is the Dictionary storing cell data.
-            graph.Clear(); // Clear dependencies if you're tracking them for formula calculations.
-                                  // Reset any other relevant state to ensure the spreadsheet is completely clear.
+            cellValues.Clear(); 
+            graph.Clear();
+   
         }
 
         private void RefreshSpreadsheetUI()
@@ -446,6 +570,14 @@ namespace GUI
 
             SemanticScreenReader.Announce(CounterBtn.Text);
         }
+        private void InitializeWidgets()
+        {
+            // Set default or empty values for the widgets
+            SelectedCellNameLabel.Text = "";
+            SelectedCellValueLabel.Text = "";
+            SelectedCellContentsEntry.Text = "";
+        }
+
         bool IsFormula(string input)
         {
             return !string.IsNullOrEmpty(input) && input.StartsWith("=");

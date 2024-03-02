@@ -43,10 +43,12 @@ namespace SS
 
         private bool changed = false;
         public override bool Changed { get => changed; protected set => changed = value; }
+        public bool HasUnsavedChanges { get; private set; }
 
         // Zero-argument constructor
         public Spreadsheet() : base(s => true, s => s, "default")
         {
+            HasUnsavedChanges = false;
         }
 
         // Three-argument constructor
@@ -93,6 +95,8 @@ namespace SS
 
             // After updating the cell's formula, determine which cells are affected by this change.
             IList<string> affectedCells = GetCellsToRecalculate(name).OrderBy(cell => cell).ToList();
+           
+            HasUnsavedChanges = true;
 
             // Calculate the set of cells affected by this change
             return affectedCells;
@@ -143,7 +147,7 @@ namespace SS
                 var dependents = GetCellsToRecalculate(name);
                 affectedCells.AddRange(dependents.Where(cellName => cellName != name));
             }
-
+            HasUnsavedChanges = true;
             return affectedCells;
         }
 
@@ -168,7 +172,9 @@ namespace SS
             dependencies.ReplaceDependees(name, new HashSet<string>());
 
             List<string> cellsToRecalculate = new List<string>(GetCellsToRecalculate(name));
-
+            
+            HasUnsavedChanges = true;
+          
             return cellsToRecalculate; 
 
           
@@ -574,7 +580,10 @@ namespace SS
                 return new SpreadsheetUtilities.FormulaError(ex.Message);
             }
         }
-
+        public void MarkAsSaved()
+        {
+            HasUnsavedChanges = false;
+        }
         public void Clear()
         {
             cells.Clear();
