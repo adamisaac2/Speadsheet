@@ -2,6 +2,25 @@
 using System.Text.Json;
 using Microsoft.Maui.Controls;
 
+/// <summary>
+/// Author:   Adam Isaac
+/// Partner:   None
+/// Date:      March 2, 2024
+/// Course:    CS 3500, University of Utah, School of Computing
+/// Copyright: CS 3500 and [Adam Isaac - This work may not
+///            be copied for use in Academic Coursework.
+///
+/// I, ADAM ISAAC, certify that I wrote this code from scratch and
+/// did not copy it in part or whole from another source.  All
+/// references used in the completion of the assignments are cited
+/// in my README file.
+///
+/// File Contents
+/// This file is used for the GUI or the user interface of my spreadsheet project that I have been working on
+/// since the beginning of the semester. It contains(almost) all the elements needed for the GUI and contains
+/// most all of the logic behind the features of the application. ENJOY!
+///    
+
 namespace GUI
 {
     public partial class MainPage : ContentPage
