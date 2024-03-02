@@ -531,23 +531,37 @@ namespace SS
 
         private object Evaluate(Formula formula)
         {
-            
             try
             {
                 // Evaluate the formula by converting it to a Func<string, double> delegate that
-                // can resolve variable values. For example, if a formula contains a reference to
-                // cell "A1", this delegate should return the value of "A1".
+                // can resolve variable values.
                 Func<string, double> variableEvaluator = variable =>
                 {
-                    if (cells.ContainsKey(variable))
+                    // Normalize the cell name before using it.
+                    string normalizedVariable = NormalizeCellName(variable);
+
+                    if (cells.ContainsKey(normalizedVariable))
                     {
-                        object content = GetCellValue(variable);
-                        if (content is double)
+                        object content = GetCellValue(normalizedVariable);
+                        if (content is double number)
                         {
-                            return (double)content;
+                            return number;
+                        }
+                        else if (content is string text && double.TryParse(text, out number))
+                        {
+                            // If the cell contains a string that can be converted to a number.
+                            return number;
+                        }
+                        else
+                        {
+                            // Handle other cases appropriately, such as empty cells or cells with non-numeric content.
+                            throw new ArgumentException($"Cell {variable} does not contain a numeric value.");
                         }
                     }
-                    throw new ArgumentException("Reference to an undefined cell.");
+                    else
+                    {
+                        throw new ArgumentException($"Reference to an undefined cell: {variable}.");
+                    }
                 };
 
                 // Use the Evaluate method of the Formula class, passing the variableEvaluator.
@@ -556,11 +570,21 @@ namespace SS
             catch (Exception ex)
             {
                 // If there's an exception (e.g., undefined cell reference, division by zero)
-                // return a FormulaError with the exception message
+                // return a FormulaError with the exception message.
                 return new SpreadsheetUtilities.FormulaError(ex.Message);
             }
         }
 
+        private string NormalizeCellName(string cellName)
+        {
+            if (string.IsNullOrWhiteSpace(cellName))
+            {
+                throw new ArgumentException("Cell name cannot be null or empty.", nameof(cellName));
+            }
+
+            // Convert the cell name to uppercase.
+            return cellName.ToUpperInvariant();
+        }
         //Inner class to represent cells and their content
         private class Cell
         {

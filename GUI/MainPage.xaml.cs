@@ -149,6 +149,8 @@ namespace GUI
                     cell.Completed += OnCellCompleted;
                     cell.Focused += OnCellFocused;
                     cell.Unfocused += OnCellUnfocused;
+                    SelectedCellContentsEntry.Completed += OnSelectedCellContentsCompleted;
+
 
                     Grid.SetColumn(cell, col);
                     Grid.SetRow(cell, row);
@@ -173,8 +175,8 @@ namespace GUI
                 // Update the cell's content in the spreadsheet logic
                 try
                 {
-                    // Assuming SetContentsOfCell handles formula evaluation internally
-                    spreadsheet.SetContentsOfCell(cellName, content);
+                    
+                    spreadsheet.SetContentsOfCell(normalizedName, content);
 
                     // Optionally, directly display the evaluated value if it's a formula
                     if (content.StartsWith("="))
@@ -201,6 +203,40 @@ namespace GUI
                 cellEntry.Text = value.ToString();
             }
         }
+        private void OnCellSelected(object sender, EventArgs e)
+        {
+            // Assuming 'sender' is the Entry that was selected
+            var entry = sender as Entry;
+            if (entry != null)
+            {
+                // Get the cell name from the Entry
+                string cellName = GetCellNameFromEntry(entry);
+                SelectedCellNameLabel.Text = cellName;
+
+                // Get the value of the cell
+                object cellValue = spreadsheet.GetCellValue(cellName);
+                SelectedCellValueLabel.Text = cellValue?.ToString() ?? "";
+
+                // Set the content of the Entry for editing
+                object cellContent = spreadsheet.GetCellContents(cellName);
+                SelectedCellContentsEntry.Text = cellContent?.ToString() ?? "";
+            }
+        }
+
+        private void OnSelectedCellContentsCompleted(object sender, EventArgs e)
+        {
+            var entry = sender as Entry;
+            if (entry != null && !string.IsNullOrEmpty(SelectedCellNameLabel.Text))
+            {
+                // Update the spreadsheet with the new content
+                spreadsheet.SetContentsOfCell(SelectedCellNameLabel.Text, entry.Text);
+
+                // You may need to refresh the cell value label and possibly other parts of your UI
+                object cellValue = spreadsheet.GetCellValue(SelectedCellNameLabel.Text);
+                SelectedCellValueLabel.Text = cellValue?.ToString() ?? "";
+            }
+        }
+
 
         private string GetCellNameFromEntry(Entry entry)
         {
@@ -244,18 +280,19 @@ namespace GUI
             {
                 // Assuming you have a way to determine the cell's name (e.g., "A1") based on the Entry control
                 string cellName = GetCellNameFromEntry(entry);
+                string normalizedName = NormalizeCellName(cellName); // Normalize the cell name
                 string content = entry.Text;
 
                 // Update the cell's content in the spreadsheet
                 try
                 {
-                    spreadsheet.SetContentsOfCell(cellName, content);
+                    spreadsheet.SetContentsOfCell(normalizedName, content);
 
                     // If the content is a formula, evaluate it and update the UI accordingly
                     if (content.StartsWith("="))
                     {
                         var value = spreadsheet.GetCellValue(cellName);
-                        entry.Text = value.ToString(); // Display the evaluated value or handle errors if value is FormulaError
+                        DisplayCellValue(entry, value); // Display the evaluated value or handle errors if value is FormulaError
                     }
                 }
                 catch (Exception ex)
@@ -275,15 +312,6 @@ namespace GUI
                 HorizontalTextAlignment = TextAlignment.Center
             };
         }
-
-       
-
-
-
-       
-
-   
-
         string GetCellIdentifier(int row, int column)
         {
             // Convert column number to letter(s)
@@ -319,7 +347,7 @@ namespace GUI
                 var json = await File.ReadAllTextAsync(filePath);
                 var loadData = JsonSerializer.Deserialize<Dictionary<string, object>>(json);
 
-                ClearSpreadsheetData();
+                ClearAllCells();
 
                 // Load data into spreadsheet
                 foreach (var kvp in loadData)
@@ -338,7 +366,7 @@ namespace GUI
 
         void FileMenuNew(object sender, EventArgs e) {
             // Step 1: Clear existing data
-            // If you're using a data structure to store cell values, clear it
+            
             cellValues.Clear(); // Assuming 'cellValues' is your data storage, like a Dictionary
 
             // Step 2: Reset the Grid
@@ -383,20 +411,10 @@ namespace GUI
             }
         }
 
-        private void ClearSpreadsheetData()
-        {
-            // Assuming 'spreadsheet' is an instance of your Spreadsheet class
-            // and it has a method to clear or reset its data.
-           ClearAllCells();
-
-            // If there's no such method, you might need to manually clear cells,
-            // depending on how your Spreadsheet class is structured.
-        }
-        
         public void ClearAllCells()
         {
             cellValues.Clear(); // Assuming 'cells' is the Dictionary storing cell data.
-           // graph.Clear(); // Clear dependencies if you're tracking them for formula calculations.
+            graph.Clear(); // Clear dependencies if you're tracking them for formula calculations.
                                   // Reset any other relevant state to ensure the spreadsheet is completely clear.
         }
 
@@ -445,6 +463,22 @@ namespace GUI
         private string NormalizeCellName(string cellName)
         {
             return cellName.ToUpper(); // Or ToLower(), based on your preference
+        }
+
+        private async void OnHelpMenuClicked(object sender, EventArgs e)
+        {
+            string helpText = "How to use the Spreadsheet:\n" +
+                              "- To change selections, tap on any cell.\n" +
+                              "- To edit cell contents, tap on the cell and start typing.\n" +
+                              "- Press 'Enter' to save the cell contents.\n" +
+                              "- Use '=' to start a formula in a cell.\n\n" +
+                              "Additional Features:\n" +
+                              "- Feature 1: Description...\n" +
+                              "- Feature 2: Description...\n" +
+                              "For more information, refer to the README file.";
+
+            // Display the help content in an alert dialog
+            await DisplayAlert("Help - How to Use", helpText, "OK");
         }
 
 

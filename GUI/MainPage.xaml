@@ -9,6 +9,10 @@
             <MenuFlyoutItem Text="Open" Clicked="FileMenuOpenAsync" />
             <MenuFlyoutItem Text="Save" Clicked="FileMenuSave" />
         </MenuBarItem>
+        <MenuBarItem Text="Help">
+            <MenuFlyoutItem Text="How to Use" Clicked="OnHelpMenuClicked"/>
+            <!-- Add other help topics as MenuFlyoutItem elements -->
+        </MenuBarItem>
     </ContentPage.MenuBarItems>
 
     <!-- Use a single root layout -->
@@ -16,6 +20,30 @@
 
         <!-- Your existing VerticalStackLayout with the spreadsheet goes here -->
         <VerticalStackLayout x:Name="Entire">
+
+
+            <StackLayout Orientation="Horizontal">
+                <!-- Non-editable widget for the cell name -->
+                <Label x:Name="SelectedCellNameLabel"
+           Text="A1"
+           VerticalOptions="Center"
+           HorizontalOptions="Start"
+           WidthRequest="50" />
+
+                <!-- Non-editable widget for the cell value -->
+                <Label x:Name="SelectedCellValueLabel"
+           Text="10"
+           VerticalOptions="Center"
+           HorizontalOptions="StartAndExpand"
+           WidthRequest="100" />
+
+                <!-- Editable widget for the cell contents -->
+                <Entry x:Name="SelectedCellContentsEntry"
+           Text="{Binding Path=Content, Mode=TwoWay}"
+           VerticalOptions="Center"
+           HorizontalOptions="FillAndExpand" />
+            </StackLayout>
+
 
             <!-- A Place to put the currently selected cell "namd" and "value" -->
             <Border
@@ -44,7 +72,6 @@
                 </HorizontalStackLayout>
             </ScrollView>
         </VerticalStackLayout>
-
 
         <!-- Your existing ScrollView with the secondary content goes here -->
         <ScrollView>

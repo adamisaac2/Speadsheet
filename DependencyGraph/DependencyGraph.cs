@@ -217,6 +217,11 @@ namespace SpreadsheetUtilities
            
 
         }
+        public void Clear()
+        {
+            dependencySet.Clear();
+        }
+
 
     }
 
