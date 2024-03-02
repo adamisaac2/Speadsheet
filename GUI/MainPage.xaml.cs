@@ -366,8 +366,7 @@ namespace GUI
 
         void FileMenuNew(object sender, EventArgs e) {
             // Step 1: Clear existing data
-            
-            cellValues.Clear(); // Assuming 'cellValues' is your data storage, like a Dictionary
+            ClearAllCells(); // Assuming 'cellValues' is your data storage, like a Dictionary
 
             // Step 2: Reset the Grid
             // Clear existing children (cells) from the grid
@@ -403,7 +402,7 @@ namespace GUI
                 var json = JsonSerializer.Serialize(saveData);
                 await File.WriteAllTextAsync(filePath, json);
 
-                await DisplayAlert("Save", "Data saved successfully.", "OK");
+                await DisplayAlert("Save", "Data saved successfully.\nThe file has been saved to documents folder.", "OK");
             }
             catch (Exception ex)
             {
@@ -426,14 +425,9 @@ namespace GUI
                 if (child is Entry entry)
                 {
                     string cellName = GetCellNameFromEntry(entry);
-                    if (spreadsheet.GetCellValue(cellName) is string value)
-                    {
-                        entry.Text = value; // Update the Entry with the cell's value.
-                    }
-                    else
-                    {
-                        entry.Text = ""; // Clear the Entry if there's no value for the cell.
-                    }
+                    string normalizedName = NormalizeCellName(cellName);
+                    var cellValue = spreadsheet.GetCellValue(normalizedName);
+                    entry.Text = cellValue?.ToString() ?? "";
                 }
             }
         }
