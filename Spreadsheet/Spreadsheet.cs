@@ -605,6 +605,7 @@ namespace SS
         {
             public object Content { get; private set; }
 
+            public String comment { get; set; }
             public Cell(double number)
             {
                 this.Content = number;
