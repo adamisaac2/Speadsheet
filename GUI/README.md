@@ -8,9 +8,9 @@ Project:    GUI
 Copyright:  CS 3500 and [Adam Isaac - This work may not be copied for use in Academic Coursework.
 
 # Comments to Evaluators
-Time Estimate : 20 Hours Actual Hours : ??
+Time Estimate : 20 Hours Actual Hours : ~20
 
-So far(end of day 3) I have spent probably close to 15 hours working on the GUI. I would say alot of this time was spent learning
+So far(end of day 5) I have spent probably close to 15 hours working on the GUI. I would say alot of this time was spent learning
 how the GUI coding part works with MAUI and C#. I have run into alot of walls with the coding of this GUI and regret deeply not working
 with a partner for the assignment. I do not think I am going to get a good grade on this but what can you do, I already made the choice so
 it is what it is. 
