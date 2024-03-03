@@ -8,7 +8,7 @@ Commit Date: 1-18-2024
 Solution:   Spreadsheet
 Copyright:  CS 3500 and [Adam Isaac] - This work may not be copied for use in Academic Coursework.
 
-# Overview of the Spreadsheet functionality, Updated After Assignment 5
+# Overview of the Spreadsheet functionality, Updated After Assignment 6
 
 
 The Spreadsheet program is currently capable of not very much. I definitely underestimated
@@ -20,7 +20,10 @@ updated the mathematical side of it, so that the spreadsheet(when implemented) c
 completely being wrong. It can now evaluate expressions correctly. --Update A4 -- Spreadsheet can now use cell functionality and can use
 information from other cells in the spreadsheet. While the GUI is not set up yet, everything seems to be getting better and better in terms
 of functionality. --Update A5 -- Spreadsheet now uses XML docs and can save data to xml doc. Also changed a few protection levels on methods 
-that were previously public, now set to protected. 
+that were previously public, now set to protected. --Update A6-- Spreadsheet now has a partially complete spreadsheet GUI. It works kind of
+but doesnt have any special features and is still really buggy. I have most of the requirements but I am done stressing myself out over this.
+I wish I had worked witha  partner but it is what it is. Im taking the L so i can study for the midterm next week. I have conceded defeat. 
+I will see you next semester professor. 
 
 # Time Expenditures:
 
@@ -38,6 +41,9 @@ that were previously public, now set to protected.
 
     1. Spreadsheet A5: Predicted Hours: 10 Actual Hours: 11
     2. SpreadsheetTests A5: Predicted Hours: 2 Actual Hours : 3.5
+
+    1. Spreadsheet GUI A6: Predicted Hours: 25+ Actual Hours: ~20
+    
 
     Time Breakdown Assignment 1 - 
     My first day working on this, I spent about 4 or 5 hours just writing all the base code without debugging
@@ -76,3 +82,12 @@ that were previously public, now set to protected.
     test that I made, I checked before running it and I was at 95.5 percent, then ran it and it was still at 95.5 percent except the lines that were
     red before, were green which means my test covered the previously red lines and my test coverage didnt go up, which means other lines that were green
     before, turned red. So idfk whats going on ig. 
+
+    Time Breakdown Assignment 6 -
+    I spent alot of time on this assignment. I didnt work with a partner and it definitely came back to bite me in the ass.
+    The first week we got assigned this assignment I could barely work on it because I had an exam in another class that same week
+    and spent most of my time studying for it. I did do well on the exam but in the end I didnt give myself enough time to work on this
+    assignment and I tried to fit it all in to a few days and it didnt work. The GUI is like partially complete but im done stressing myself
+    over it and just taking the L so I can study for the exam. I would say that my time spent on the GUI was spent pretty evenly amongst
+    the implementations of the GUI, it took me a pretty much equal amount of time to implement everything I have available in the GUI and I probably
+    worked like 20 or so hours on it. 
